@@ -35,6 +35,9 @@
 #define window_width 1280
 #define window_height 720
 
+#define map_width 100.0f
+#define map_height 100.0f
+
 // Estrutura que representa um modelo geométrico carregado a partir de um
 // arquivo ".obj". Veja https://en.wikipedia.org/wiki/Wavefront_.obj_file .
 struct ObjModel
@@ -350,7 +353,7 @@ int main(int argc, char* argv[])
     
     float prev_time = (float)glfwGetTime();
 
-    std::vector<Creature> creatures = SpawnCreatures(10, 10.0f, 10.0f); 
+    std::vector<Creature> creatures = SpawnCreatures(10, map_width, map_height); 
 
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
@@ -492,21 +495,24 @@ int main(int argc, char* argv[])
 
         // Desenhamos o plano do chão
         model = Matrix_Translate(0.0f,-1.1f,0.0f)
-              * Matrix_Scale(100.0f, 1.0f, 100.0f);
+              * Matrix_Scale(map_width, 1.0f, map_height);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, PLANE);
         glUniform2f(tilingLocation, 10.0f, 10.0f);
         DrawVirtualObject("the_plane");
 
         for (const auto& creature : creatures) {
-            model = Matrix_Translate(creature.GetPosition().x, creature.GetPosition().y - 1.5f, creature.GetPosition().z)
-                    * Matrix_Rotate_X(glm::radians(-90.0f))
-                    * Matrix_Scale(0.8f, 0.8f, 0.8f);
+            glm::vec4 position = creature.GetPosition();
+            float rotation_angle = creature.GetRotationAngle();
+            glm::mat4 model = Matrix_Translate(position.x, position.y - 1.5f, position.z) // Ajusta a posição Y para GROUND_LEVEL
+                            * Matrix_Rotate_Y(rotation_angle) // Aplica a rotação em torno do eixo Y
+                            * Matrix_Rotate_X(glm::radians(-90.0f)) // Rotaciona 90 graus em torno do eixo X, se necessário
+                            * Matrix_Scale(0.8f, 0.8f, 0.8f); // Escala o modelo
 
             glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
             glUniform1i(g_object_id_uniform, CREATURE);
             glUniform2f(tilingLocation, 1.0f, 1.0f);
-            DrawVirtualObject("obj1"); 
+            DrawVirtualObject("obj1");
             DrawVirtualObject("obj2");
         }
 
