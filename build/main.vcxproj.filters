@@ -16,11 +16,22 @@
     <ClCompile Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\src\glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\src\creature.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\src\creature.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{95FD65DD-3626-3DDB-A25C-FB3C33A57AA7}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{80075490-564A-326D-B4E1-869C67035372}</UniqueIdentifier>
     </Filter>

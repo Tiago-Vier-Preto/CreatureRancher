@@ -318,6 +318,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\src\tiny_obj_loader.cpp" />
     <ClCompile Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\src\stb_image.cpp" />
     <ClCompile Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\src\glad.c" />
+    <ClCompile Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\src\creature.cpp" />
+    <ClInclude Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\src\creature.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\build\ZERO_CHECK.vcxproj">

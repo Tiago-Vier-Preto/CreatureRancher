@@ -30,6 +30,7 @@
 // Headers locais, definidos na pasta "include/"
 #include "utils.h"
 #include "matrices.h"
+#include "creature.hpp"
 
 #define window_width 1280
 #define window_height 720
@@ -312,7 +313,7 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../data/tc-earth_daymap_surface.jpg");      // TextureImage0
     LoadTextureImage("../../data/tc-earth_nightmap_citylights.gif"); // TextureImage1
     LoadTextureImage("../../data/aerial_grass_rock/textures/aerial_grass_rock_diff_4k.jpg"); // TextureImage2
-
+    LoadTextureImage("../../data/cryo-slime/textures/bake.png"); // TextureImage3
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel spheremodel("../../data/sphere.obj");
     ComputeNormals(&spheremodel);
@@ -325,6 +326,10 @@ int main(int argc, char* argv[])
     ObjModel planemodel("../../data/plane.obj");
     ComputeNormals(&planemodel);
     BuildTrianglesAndAddToVirtualScene(&planemodel);
+
+    ObjModel cryomodel("../../data/cryo-slime/source/cryo.obj");
+    ComputeNormals(&cryomodel);
+    BuildTrianglesAndAddToVirtualScene(&cryomodel);
 
     if ( argc > 1 )
     {
@@ -344,6 +349,8 @@ int main(int argc, char* argv[])
     glFrontFace(GL_CCW);
     
     float prev_time = (float)glfwGetTime();
+
+    std::vector<Creature> creatures = SpawnCreatures(10, 10.0f, 10.0f); 
 
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
@@ -394,6 +401,10 @@ int main(int argc, char* argv[])
         prev_time = current_time;
 
         float speed = g_IsSprinting ? SPRINT_SPEED : NORMAL_SPEED;
+
+        for (auto& creature : creatures) {
+            creature.Update(delta_t);
+        }
 
         g_CameraVerticalVelocity += GRAVITY * delta_t;
         camera_position_c.y += g_CameraVerticalVelocity * delta_t;
@@ -456,9 +467,10 @@ int main(int argc, char* argv[])
         glUniformMatrix4fv(g_view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
         glUniformMatrix4fv(g_projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
 
-        #define SPHERE 0
-        #define BUNNY  1
-        #define PLANE  2
+        #define SPHERE   0
+        #define BUNNY    1
+        #define PLANE    2
+        #define CREATURE 3
 
         // Desenhamos o modelo da esfera
         model = Matrix_Translate(-1.0f,0.0f,0.0f)
@@ -485,6 +497,18 @@ int main(int argc, char* argv[])
         glUniform1i(g_object_id_uniform, PLANE);
         glUniform2f(tilingLocation, 10.0f, 10.0f);
         DrawVirtualObject("the_plane");
+
+        for (const auto& creature : creatures) {
+            model = Matrix_Translate(creature.GetPosition().x, creature.GetPosition().y - 1.5f, creature.GetPosition().z)
+                    * Matrix_Rotate_X(glm::radians(-90.0f))
+                    * Matrix_Scale(0.8f, 0.8f, 0.8f);
+
+            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+            glUniform1i(g_object_id_uniform, CREATURE);
+            glUniform2f(tilingLocation, 1.0f, 1.0f);
+            DrawVirtualObject("obj1"); 
+            DrawVirtualObject("obj2");
+        }
 
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
         // terceiro cubo.
@@ -653,6 +677,7 @@ void LoadShadersFromFiles()
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage0"), 0);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage1"), 1);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 2);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage3"), 3);
     glUseProgram(0);
 }
 

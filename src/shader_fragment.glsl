@@ -22,6 +22,7 @@ uniform mat4 projection;
 #define SPHERE 0
 #define BUNNY  1
 #define PLANE  2
+#define CREATURE 3
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -32,6 +33,7 @@ uniform vec4 bbox_max;
 uniform sampler2D TextureImage0;
 uniform sampler2D TextureImage1;
 uniform sampler2D TextureImage2;
+uniform sampler2D TextureImage3; // Creature
 
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
@@ -153,6 +155,21 @@ void main()
         V = texcoords.y;
 
         vec3 Kd0 = texture(TextureImage2, vec2(U,V)).rgb;
+
+        float lambert = max(0,dot(n,l));
+
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == CREATURE)
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(TextureImage3, vec2(U,V)).rgb;
 
         float lambert = max(0,dot(n,l));
 
