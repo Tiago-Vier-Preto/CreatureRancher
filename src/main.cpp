@@ -208,6 +208,7 @@ GLint g_projection_uniform;
 GLint g_object_id_uniform;
 GLint g_bbox_min_uniform;
 GLint g_bbox_max_uniform;
+GLuint tilingLocation;
 
 // Número de texturas carregadas pela função LoadTextureImage()
 GLuint g_NumLoadedTextures = 0;
@@ -217,6 +218,18 @@ bool g_DkeyPressed = false;
 bool g_AkeyPressed = false;
 bool g_WkeyPressed = false;
 bool g_SkeyPressed = false;
+
+const float GRAVITY = -9.81f; 
+const float GROUND_LEVEL = 0.0f; 
+
+float g_CameraVerticalVelocity = 0.0f;
+
+bool g_IsJumping = false;
+const float JUMP_VELOCITY = 5.0f; // Initial velocity for the jump
+
+bool g_IsSprinting = false;
+const float NORMAL_SPEED = 1.0f;
+const float SPRINT_SPEED = 3.0f;
 
 int main(int argc, char* argv[])
 {
@@ -265,7 +278,9 @@ int main(int argc, char* argv[])
     // ... ou rolar a "rodinha" do mouse.
     glfwSetScrollCallback(window, ScrollCallback);
     // Esconder o cursor
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    glfwSetCursorPos(window, window_width / 2.0, window_height / 2.0);
 
     // Indicamos que as chamadas OpenGL deverão renderizar nesta janela
     glfwMakeContextCurrent(window);
@@ -296,6 +311,7 @@ int main(int argc, char* argv[])
     // Carregamos duas imagens para serem utilizadas como textura
     LoadTextureImage("../../data/tc-earth_daymap_surface.jpg");      // TextureImage0
     LoadTextureImage("../../data/tc-earth_nightmap_citylights.gif"); // TextureImage1
+    LoadTextureImage("../../data/aerial_grass_rock/textures/aerial_grass_rock_diff_4k.jpg"); // TextureImage2
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel spheremodel("../../data/sphere.obj");
@@ -326,8 +342,7 @@ int main(int argc, char* argv[])
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
-
-    float speed = 1.0f; // Velocidade da câmera
+    
     float prev_time = (float)glfwGetTime();
 
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
@@ -378,6 +393,18 @@ int main(int argc, char* argv[])
         float delta_t = current_time - prev_time;
         prev_time = current_time;
 
+        float speed = g_IsSprinting ? SPRINT_SPEED : NORMAL_SPEED;
+
+        g_CameraVerticalVelocity += GRAVITY * delta_t;
+        camera_position_c.y += g_CameraVerticalVelocity * delta_t;
+
+        if (camera_position_c.y < GROUND_LEVEL)
+        {
+            camera_position_c.y = GROUND_LEVEL;
+            g_CameraVerticalVelocity = 0.0f; // reseta a velocidade vertical quando houver colisao com o chao
+            g_IsJumping = false;
+        }
+
         // Atualizamos a posição da câmera utilizando as teclas W, A, S, D
         if (g_WkeyPressed) camera_position_c += -w_vector * speed * delta_t;
         
@@ -398,7 +425,7 @@ int main(int argc, char* argv[])
         // Note que, no sistema de coordenadas da câmera, os planos near e far
         // estão no sentido negativo! Veja slides 176-204 do documento Aula_09_Projecoes.pdf.
         float nearplane = -0.1f;  // Posição do "near plane"
-        float farplane  = -10.0f; // Posição do "far plane"
+        float farplane  = -1000.0f; // Posição do "far plane"
 
         if (g_UsePerspectiveProjection)
         {
@@ -440,6 +467,7 @@ int main(int argc, char* argv[])
               * Matrix_Rotate_Y(g_AngleY + (float)glfwGetTime() * 0.1f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, SPHERE);
+        glUniform2f(tilingLocation, 1.0f, 1.0f);
         DrawVirtualObject("the_sphere");
 
         // Desenhamos o modelo do coelho
@@ -447,12 +475,15 @@ int main(int argc, char* argv[])
               * Matrix_Rotate_X(g_AngleX + (float)glfwGetTime() * 0.1f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, BUNNY);
+        glUniform2f(tilingLocation, 1.0f, 1.0f);
         DrawVirtualObject("the_bunny");
 
         // Desenhamos o plano do chão
-        model = Matrix_Translate(0.0f,-1.1f,0.0f);
+        model = Matrix_Translate(0.0f,-1.1f,0.0f)
+              * Matrix_Scale(100.0f, 1.0f, 100.0f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, PLANE);
+        glUniform2f(tilingLocation, 10.0f, 10.0f);
         DrawVirtualObject("the_plane");
 
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
@@ -515,8 +546,8 @@ void LoadTextureImage(const char* filename)
     glGenSamplers(1, &sampler_id);
 
     // Veja slides 95-96 do documento Aula_20_Mapeamento_de_Texturas.pdf
-    glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     // Parâmetros de amostragem da textura.
     glSamplerParameteri(sampler_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -615,6 +646,7 @@ void LoadShadersFromFiles()
     g_object_id_uniform  = glGetUniformLocation(g_GpuProgramID, "object_id"); // Variável "object_id" em shader_fragment.glsl
     g_bbox_min_uniform   = glGetUniformLocation(g_GpuProgramID, "bbox_min");
     g_bbox_max_uniform   = glGetUniformLocation(g_GpuProgramID, "bbox_max");
+    tilingLocation       = glGetUniformLocation(g_GpuProgramID, "tiling_factor");
 
     // Variáveis em "shader_fragment.glsl" para acesso das imagens de textura
     glUseProgram(g_GpuProgramID);
@@ -1216,8 +1248,13 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         g_AngleZ += (mod & GLFW_MOD_SHIFT) ? -delta : delta;
     }
 
+    if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS)
+        g_IsSprinting = true;
+    else if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_RELEASE)
+        g_IsSprinting = false;
+
     // Se o usuário apertar a tecla espaço, resetamos os ângulos de Euler para zero.
-    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS && !g_IsJumping)
     {
         g_AngleX = 0.0f;
         g_AngleY = 0.0f;
@@ -1226,6 +1263,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         g_ForearmAngleZ = 0.0f;
         g_TorsoPositionX = 0.0f;
         g_TorsoPositionY = 0.0f;
+
+        g_IsJumping = true;
+        g_CameraVerticalVelocity = JUMP_VELOCITY;
     }
 
     // Se o usuário apertar a tecla P, utilizamos projeção perspectiva.

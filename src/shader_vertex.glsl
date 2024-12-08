@@ -11,6 +11,9 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
+// Coeficiente de tiling da textura
+uniform vec2 tiling_factor;
+
 // Atributos de vértice que serão gerados como saída ("out") pelo Vertex Shader.
 // ** Estes serão interpolados pelo rasterizador! ** gerando, assim, valores
 // para cada fragmento, os quais serão recebidos como entrada pelo Fragment
@@ -61,7 +64,7 @@ void main()
     normal = inverse(transpose(model)) * normal_coefficients;
     normal.w = 0.0;
 
-    // Coordenadas de textura obtidas do arquivo OBJ (se existirem!)
-    texcoords = texture_coefficients;
+  
+    texcoords = texture_coefficients * vec2(tiling_factor.x, tiling_factor.y);
 }
 
