@@ -23,6 +23,7 @@ uniform mat4 projection;
 #define BUNNY  1
 #define PLANE  2
 #define CREATURE 3
+#define SKYBOX  4
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -34,6 +35,8 @@ uniform sampler2D TextureImage0;
 uniform sampler2D TextureImage1;
 uniform sampler2D TextureImage2;
 uniform sampler2D TextureImage3; // Creature
+
+uniform samplerCube skybox; // Skybox
 
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
@@ -178,5 +181,17 @@ void main()
 
         color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
     }
+    else if (object_id == SKYBOX)
+    {
+        vec3 direction = normalize(vec3(texcoords, 1.0)); // Ajuste conforme necessário para obter a direção correta
+
+        vec3 Kd0 = texture(skybox, vec3(position_model[0], position_model[1], position_model[2])).rgb;
+
+        color.rgb = Kd0;
+        
+        color.rgb = pow(color.rgb, vec3(1.0, 1.0, 1.0) / 2.2);
+    }
+
+    
 } 
 

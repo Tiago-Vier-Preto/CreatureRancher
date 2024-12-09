@@ -1,6 +1,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <iostream>
 
 // Headers abaixo são específicos de C++
 #include <map>
@@ -113,6 +114,7 @@ GLuint LoadShader_Fragment(const char* filename); // Carrega um fragment shader
 void LoadShader(const char* filename, GLuint shader_id); // Função utilizada pelas duas acima
 GLuint CreateGpuProgram(GLuint vertex_shader_id, GLuint fragment_shader_id); // Cria um programa de GPU
 void PrintObjModelInfo(ObjModel*); // Função para debugging
+void LoadCubemap(std::vector<std::string> faces); // Função para carregar um cubemap
 
 // Declaração de funções auxiliares para renderizar texto dentro da janela
 // OpenGL. Estas funções estão definidas no arquivo "textrendering.cpp".
@@ -206,6 +208,8 @@ bool g_ShowInfoText = true;
 
 // Variáveis que definem um programa de GPU (shaders). Veja função LoadShadersFromFiles().
 GLuint g_GpuProgramID = 0;
+GLuint g_SkyboxProgramID = 0;
+GLuint g_CubemapTextureID = 0;
 GLint g_model_uniform;
 GLint g_view_uniform;
 GLint g_projection_uniform;
@@ -334,6 +338,10 @@ int main(int argc, char* argv[])
     ComputeNormals(&cryomodel);
     BuildTrianglesAndAddToVirtualScene(&cryomodel);
 
+    ObjModel cubemodel("../../data/skybox/skybox.obj");
+    ComputeNormals(&cubemodel);
+    BuildTrianglesAndAddToVirtualScene(&cubemodel);
+
     if ( argc > 1 )
     {
         ObjModel model(argv[1]);
@@ -354,6 +362,19 @@ int main(int argc, char* argv[])
     float prev_time = (float)glfwGetTime();
 
     std::vector<Creature> creatures = SpawnCreatures(10, map_width, map_height); 
+
+    std::vector<std::string> faces
+    {
+        "../../data/skybox/right.jpg",
+        "../../data/skybox/left.jpg",
+        "../../data/skybox/top.jpg",
+        "../../data/skybox/bottom.jpg",
+        "../../data/skybox/back.jpg",
+        "../../data/skybox/front.jpg"
+    };
+    stbi_set_flip_vertically_on_load(false);
+    LoadCubemap(faces);
+    stbi_set_flip_vertically_on_load(true);
 
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
@@ -474,6 +495,7 @@ int main(int argc, char* argv[])
         #define BUNNY    1
         #define PLANE    2
         #define CREATURE 3
+        #define CUBE     4
 
         // Desenhamos o modelo da esfera
         model = Matrix_Translate(-1.0f,0.0f,0.0f)
@@ -515,6 +537,18 @@ int main(int argc, char* argv[])
             DrawVirtualObject("obj1");
             DrawVirtualObject("obj2");
         }
+
+        // Desenhamos o modelo do cubo
+        model = Matrix_Translate(0.0f,0.0f,0.0f)
+                * Matrix_Scale(100.0f, 100.0f, 100.0f);
+        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, CUBE);
+        glUniform2f(tilingLocation, 1.0f, 1.0f);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, g_CubemapTextureID);
+        glUniform1i(glGetUniformLocation(g_SkyboxProgramID, "skybox"), 4);
+        DrawVirtualObject("cube");
+
 
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
         // terceiro cubo.
@@ -601,6 +635,40 @@ void LoadTextureImage(const char* filename)
     g_NumLoadedTextures += 1;
 }
 
+void LoadCubemap(std::vector<std::string> faces)
+{
+    GLuint texture_id;
+    GLuint sampler_id;
+    glGenTextures(1, &texture_id);
+    glGenSamplers(1, &sampler_id);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture_id);
+
+    int width, height, nrChannels;
+    for (unsigned int i = 0; i < faces.size(); i++)
+    {
+        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        if (data)
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                         0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+            );
+            stbi_image_free(data);
+        }
+        else
+        {
+            fprintf(stderr, "ERROR: Cannot open image file \"%s\".\n", faces[i].c_str());
+            stbi_image_free(data);
+        }
+    }
+
+    GLuint textureunit = g_NumLoadedTextures;
+    glActiveTexture(GL_TEXTURE0 + textureunit);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture_id);
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+    glBindSampler(textureunit, sampler_id);
+    g_NumLoadedTextures += 1;
+}
+
 // Função que desenha um objeto armazenado em g_VirtualScene. Veja definição
 // dos objetos na função BuildTrianglesAndAddToVirtualScene().
 void DrawVirtualObject(const char* object_name)
@@ -684,6 +752,10 @@ void LoadShadersFromFiles()
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage1"), 1);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 2);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage3"), 3);
+
+    // skybox
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "skybox"), 4);
+
     glUseProgram(0);
 }
 
