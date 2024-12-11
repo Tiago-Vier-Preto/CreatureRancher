@@ -234,8 +234,8 @@ bool g_IsJumping = false;
 const float JUMP_VELOCITY = 5.0f; // Initial velocity for the jump
 
 bool g_IsSprinting = false;
-const float NORMAL_SPEED = 1.0f;
-const float SPRINT_SPEED = 3.0f;
+const float NORMAL_SPEED = 5.0f;
+const float SPRINT_SPEED = 10.0f;
 
 int main(int argc, char* argv[])
 {
@@ -343,14 +343,6 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../data/weapon/textures/ROUGHNESS.png"); // TextureImage18
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
-    ObjModel spheremodel("../../data/sphere.obj");
-    ComputeNormals(&spheremodel);
-    BuildTrianglesAndAddToVirtualScene(&spheremodel);
-
-    ObjModel bunnymodel("../../data/bunny.obj");
-    ComputeNormals(&bunnymodel);
-    BuildTrianglesAndAddToVirtualScene(&bunnymodel);
-
     ObjModel planemodel("../../data/plane.obj");
     ComputeNormals(&planemodel);
     BuildTrianglesAndAddToVirtualScene(&planemodel);
@@ -414,7 +406,7 @@ int main(int argc, char* argv[])
     
     float prev_time = (float)glfwGetTime();
 
-    std::vector<Creature*> creatures = SpawnCreatures(10, map_width, map_height); 
+    std::vector<Creature*> creatures = SpawnCreatures(20, map_width, map_height); 
 
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
@@ -530,30 +522,10 @@ int main(int argc, char* argv[])
         glUniformMatrix4fv(g_view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
         glUniformMatrix4fv(g_projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
 
-        #define SPHERE   0
-        #define BUNNY    1
         #define PLANE    2
         #define CREATURE 3
         #define CUBE     11
         #define WEAPON   12
-
-        // Desenhamos o modelo da esfera
-        model = Matrix_Translate(-1.0f,0.0f,0.0f)
-              * Matrix_Rotate_Z(0.6f)
-              * Matrix_Rotate_X(0.2f)
-              * Matrix_Rotate_Y(g_AngleY + (float)glfwGetTime() * 0.1f);
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, SPHERE);
-        glUniform2f(tilingLocation, 1.0f, 1.0f);
-        DrawVirtualObject("the_sphere");
-
-        // Desenhamos o modelo do coelho
-        model = Matrix_Translate(1.0f,0.0f,0.0f)
-              * Matrix_Rotate_X(g_AngleX + (float)glfwGetTime() * 0.1f);
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, BUNNY);
-        glUniform2f(tilingLocation, 1.0f, 1.0f);
-        DrawVirtualObject("the_bunny");
 
         // Desenhamos o plano do chão
         model = Matrix_Translate(0.0f,-1.1f,0.0f)
@@ -566,16 +538,98 @@ int main(int argc, char* argv[])
         for (const auto& creature : creatures) {
             glm::vec4 position = creature->GetPosition();
             float rotation_angle = creature->GetRotationAngle();
-            glm::mat4 model = Matrix_Translate(position.x, position.y - 1.5f, position.z) // Ajusta a posição Y para GROUND_LEVEL
-                            * Matrix_Rotate_Y(rotation_angle) // Aplica a rotação em torno do eixo Y
-                            * Matrix_Rotate_X(glm::radians(-90.0f)) // Rotaciona 90 graus em torno do eixo X, se necessário
-                            * Matrix_Scale(0.8f, 0.8f, 0.8f); // Escala o modelo
 
-            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-            glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
-            glUniform2f(tilingLocation, 1.0f, 1.0f);
-            DrawVirtualObject("obj1");
-            DrawVirtualObject("obj2");
+            if (creature->GetType() == 0) { // Anemo
+                model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
+                            * Matrix_Rotate_Y(rotation_angle) 
+                            * Matrix_Scale(1.0f, 1.0f, 1.0f);
+                glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
+                glUniform2f(tilingLocation, 1.0f, 1.0f);
+                DrawVirtualObject("anemo1");
+                DrawVirtualObject("anemo2");
+                DrawVirtualObject("anemo3");
+            } else if (creature->GetType() == 1) { // Cryo
+                model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
+                            * Matrix_Rotate_Y(rotation_angle) 
+                            * Matrix_Rotate_X(3*3.141592f/2.0f) 
+                            * Matrix_Scale(1.0f, 1.0f, 1.0f);
+                glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
+                glUniform2f(tilingLocation, 1.0f, 1.0f);
+                DrawVirtualObject("cryo1");
+                DrawVirtualObject("cryo2");
+            } else if (creature->GetType() == 2) { // Dendro
+                model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
+                            * Matrix_Rotate_Y(rotation_angle) 
+                            * Matrix_Rotate_X(3*3.141592f/2.0f)
+                            * Matrix_Scale(1.0f, 1.0f, 1.0f);
+                glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
+                glUniform2f(tilingLocation, 1.0f, 1.0f);
+                DrawVirtualObject("dendro1");
+                DrawVirtualObject("dendro2");
+                DrawVirtualObject("dendro3");
+                DrawVirtualObject("dendro4");
+                DrawVirtualObject("dendro5");
+                DrawVirtualObject("dendro6");
+                DrawVirtualObject("dendro7");
+                DrawVirtualObject("dendro8");
+                DrawVirtualObject("dendro9");
+                DrawVirtualObject("dendro10");
+                DrawVirtualObject("dendro11");
+                DrawVirtualObject("dendro12");
+                DrawVirtualObject("dendro13");
+                DrawVirtualObject("dendro14");
+                DrawVirtualObject("dendro15");
+                DrawVirtualObject("dendro16");
+            } else if (creature->GetType() == 3) { // Electro
+                model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
+                            * Matrix_Rotate_Y(rotation_angle) 
+                            * Matrix_Scale(0.01f, 0.01f, 0.01f);
+                glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
+                glUniform2f(tilingLocation, 1.0f, 1.0f);
+                DrawVirtualObject("electro1");
+                DrawVirtualObject("electro2");
+                DrawVirtualObject("electro3");
+            } else if (creature->GetType() == 4) { // Fire
+                model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
+                            * Matrix_Rotate_Y(rotation_angle) 
+                            * Matrix_Scale(0.01f, 0.01f, 0.01f);
+                glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
+                glUniform2f(tilingLocation, 1.0f, 1.0f); 
+                DrawVirtualObject("fire1");
+                DrawVirtualObject("fire2");
+            } else if (creature->GetType() == 5) { // Geo
+                model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
+                            * Matrix_Rotate_Y(rotation_angle) 
+                            * Matrix_Scale(0.01f, 0.01f, 0.01f);
+                glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
+                glUniform2f(tilingLocation, 1.0f, 1.0f);
+                DrawVirtualObject("geo1");
+            } else if (creature->GetType() == 6) { // Mutated Electro
+                model = Matrix_Translate(position.x, position.y - 1.5f, position.z)
+                            * Matrix_Rotate_Y(rotation_angle)
+                            * Matrix_Scale(0.01f, 0.01f, 0.01f);
+                glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
+                glUniform2f(tilingLocation, 1.0f, 1.0f); 
+                DrawVirtualObject("mutated-electro1");
+                DrawVirtualObject("mutated-electro2");
+                DrawVirtualObject("mutated-electro3");
+            } else if (creature->GetType() == 7) { // Water
+                model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
+                            * Matrix_Rotate_Y(rotation_angle) 
+                            * Matrix_Scale(0.01f, 0.01f, 0.01f);
+                glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
+                glUniform2f(tilingLocation, 1.0f, 1.0f);
+                DrawVirtualObject("water1");
+                DrawVirtualObject("water2");
+            }
         }
 
         // Desenhamos o modelo do cubo
@@ -584,9 +638,6 @@ int main(int argc, char* argv[])
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, CUBE);
         glUniform2f(tilingLocation, 1.0f, 1.0f);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, g_CubemapTextureID);
-        glUniform1i(glGetUniformLocation(g_SkyboxProgramID, "skybox"), 4);
         DrawVirtualObject("cube");
 
         // Desenhamos o modelo da arma

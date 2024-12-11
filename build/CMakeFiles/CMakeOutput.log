@@ -9,7 +9,7 @@ The output was:
 Microsoft(R) Build Engine versão 16.11.2+f32259642 para .NET Framework 
 Copyright (C) Microsoft Corporation. Todos os direitos reservados.
 
-Compilação de 07/12/2024 20:07:49 iniciada.
+Compilação de 11/12/2024 09:09:14 iniciada.
 Projeto "C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\build\CMakeFiles\3.25.1-msvc1\CompilerIdC\CompilerIdC.vcxproj" no nó 1 (destinos padrão).
 PrepareForBuild:
   Criando o diretório "Debug\".
@@ -35,7 +35,7 @@ Compilação com êxito.
     0 Aviso(s)
     0 Erro(s)
 
-Tempo Decorrido 00:00:01.01
+Tempo Decorrido 00:00:00.88
 
 
 Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.exe"
@@ -54,7 +54,7 @@ The output was:
 Microsoft(R) Build Engine versão 16.11.2+f32259642 para .NET Framework 
 Copyright (C) Microsoft Corporation. Todos os direitos reservados.
 
-Compilação de 07/12/2024 20:07:51 iniciada.
+Compilação de 11/12/2024 09:09:15 iniciada.
 Projeto "C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\build\CMakeFiles\3.25.1-msvc1\CompilerIdCXX\CompilerIdCXX.vcxproj" no nó 1 (destinos padrão).
 PrepareForBuild:
   Criando o diretório "Debug\".
@@ -80,7 +80,7 @@ Compilação com êxito.
     0 Aviso(s)
     0 Erro(s)
 
-Tempo Decorrido 00:00:00.62
+Tempo Decorrido 00:00:00.57
 
 
 Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.exe"
@@ -90,30 +90,30 @@ Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" p
 The CXX compiler identification is MSVC, found in "C:/Users/tvpre/OneDrive/Documents/code/CreatureRancher/build/CMakeFiles/3.25.1-msvc1/CompilerIdCXX/CompilerIdCXX.exe"
 
 Detecting C compiler ABI info compiled with the following output:
-Change Dir: C:/Users/tvpre/OneDrive/Documents/code/CreatureRancher/build/CMakeFiles/CMakeScratch/TryCompile-oy5hps
+Change Dir: C:/Users/tvpre/OneDrive/Documents/code/CreatureRancher/build/CMakeFiles/CMakeScratch/TryCompile-qo2uvc
 
-Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/MSBuild/Current/Bin/MSBuild.exe cmTC_5f15b.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=16.0 /v:m && Microsoft(R) Build Engine versão 16.11.2+f32259642 para .NET Framework 
+Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/MSBuild/Current/Bin/MSBuild.exe cmTC_3a550.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=16.0 /v:m && Microsoft(R) Build Engine versão 16.11.2+f32259642 para .NET Framework 
 Copyright (C) Microsoft Corporation. Todos os direitos reservados.
 
   Microsoft (R) C/C++ Optimizing Compiler Versão 19.29.30153 para x64
   Copyright (C) Microsoft Corporation. Todos os direitos reservados.
   CMakeCCompilerABI.c
-  cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_5f15b.dir\Debug\\" /Fd"cmTC_5f15b.dir\Debug\vc142.pdb" /external:W3 /Gd /TC /errorReport:queue "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.25\Modules\CMakeCCompilerABI.c"
-  cmTC_5f15b.vcxproj -> C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\build\CMakeFiles\CMakeScratch\TryCompile-oy5hps\Debug\cmTC_5f15b.exe
+  cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_3a550.dir\Debug\\" /Fd"cmTC_3a550.dir\Debug\vc142.pdb" /external:W3 /Gd /TC /errorReport:queue "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.25\Modules\CMakeCCompilerABI.c"
+  cmTC_3a550.vcxproj -> C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\build\CMakeFiles\CMakeScratch\TryCompile-qo2uvc\Debug\cmTC_3a550.exe
 
 
 
 Detecting CXX compiler ABI info compiled with the following output:
-Change Dir: C:/Users/tvpre/OneDrive/Documents/code/CreatureRancher/build/CMakeFiles/CMakeScratch/TryCompile-tu0xan
+Change Dir: C:/Users/tvpre/OneDrive/Documents/code/CreatureRancher/build/CMakeFiles/CMakeScratch/TryCompile-jfmyyi
 
-Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/MSBuild/Current/Bin/MSBuild.exe cmTC_47ca1.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=16.0 /v:m && Microsoft(R) Build Engine versão 16.11.2+f32259642 para .NET Framework 
+Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/MSBuild/Current/Bin/MSBuild.exe cmTC_10c73.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=16.0 /v:m && Microsoft(R) Build Engine versão 16.11.2+f32259642 para .NET Framework 
 Copyright (C) Microsoft Corporation. Todos os direitos reservados.
 
   Microsoft (R) C/C++ Optimizing Compiler Versão 19.29.30153 para x64
   Copyright (C) Microsoft Corporation. Todos os direitos reservados.
   CMakeCXXCompilerABI.cpp
-  cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_47ca1.dir\Debug\\" /Fd"cmTC_47ca1.dir\Debug\vc142.pdb" /external:W3 /Gd /TP /errorReport:queue "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.25\Modules\CMakeCXXCompilerABI.cpp"
-  cmTC_47ca1.vcxproj -> C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\build\CMakeFiles\CMakeScratch\TryCompile-tu0xan\Debug\cmTC_47ca1.exe
+  cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_10c73.dir\Debug\\" /Fd"cmTC_10c73.dir\Debug\vc142.pdb" /external:W3 /Gd /TP /errorReport:queue "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.25\Modules\CMakeCXXCompilerABI.cpp"
+  cmTC_10c73.vcxproj -> C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\build\CMakeFiles\CMakeScratch\TryCompile-jfmyyi\Debug\cmTC_10c73.exe
 
 
 
