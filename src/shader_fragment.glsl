@@ -24,6 +24,7 @@ uniform mat4 projection;
 #define PLANE  2
 #define CREATURE 3
 #define SKYBOX  4
+#define WEAPON 5
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -37,6 +38,18 @@ uniform sampler2D TextureImage2;
 uniform sampler2D TextureImage3; // Creature
 
 uniform samplerCube skybox; // Skybox
+
+// texturas da arma 
+uniform sampler2D TextureImage4;  // AOTexture
+uniform sampler2D TextureImage5;  // Base Color
+uniform sampler2D TextureImage6;  // Curvature
+uniform sampler2D TextureImage7;  // Emmissive
+uniform sampler2D TextureImage8;  // Metallic
+uniform sampler2D TextureImage9;  // Normal
+uniform sampler2D TextureImage10; // Opacity
+uniform sampler2D TextureImage11; // Roughness
+
+
 
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
@@ -191,7 +204,73 @@ void main()
         
         color.rgb = pow(color.rgb, vec3(1.0, 1.0, 1.0) / 2.2);
     }
+    else if (object_id == WEAPON) 
+    {
+        vec4 p = position_world;
+        vec4 n = normalize(normal);
 
-    
+        // Sample textures
+        vec3 baseColor = texture(TextureImage5, texcoords).rgb;
+        float ao = texture(TextureImage4, texcoords).r;
+        vec3 emissive = texture(TextureImage7, texcoords).rgb;
+        float metallic = texture(TextureImage8, texcoords).r;
+        float roughness = texture(TextureImage11, texcoords).r;
+        float opacity = texture(TextureImage10, texcoords).r;
+
+        // Curvature map for detail enhancement
+        float curvature = texture(TextureImage6, texcoords).r;
+
+        // Adjust normals using Tangent Space Normal Mapping
+        vec3 tangentNormal = texture(TextureImage9, texcoords).rgb * 2.0 - 1.0;
+
+        // Compute TBN matrix (Tangent-Bitangent-Normal)
+        vec3 T = normalize(vec3(model * vec4(1.0, 0.0, 0.0, 0.0)));
+        vec3 B = normalize(vec3(model * vec4(0.0, 1.0, 0.0, 0.0)));
+        vec3 N = normalize(vec3(n));
+        mat3 TBN = mat3(T, B, N);
+        vec3 adjustedNormal = normalize(TBN * tangentNormal);
+
+        // Lighting vectors
+        vec3 lightDir = normalize(vec3(1.0, 1.0, 0.0)); // Light direction
+        vec3 viewDir = normalize(vec3(camera_position - p)); // View direction
+
+        // Apply curvature as a multiplier to baseColor
+        vec3 detailedBaseColor = baseColor * (1.0 + curvature * 0.5);
+
+        // Ambient light with AO
+        vec3 ambient = detailedBaseColor * ao;
+
+        // Diffuse shading
+        float lambert = max(dot(adjustedNormal, lightDir), 0.0);
+        vec3 diffuse = detailedBaseColor * lambert;
+
+        // Specular reflection using Blinn-Phong with roughness
+        vec3 halfDir = normalize(lightDir + viewDir);
+        float specAngle = max(dot(adjustedNormal, halfDir), 0.0);
+        float fresnel = pow(1.0 - dot(viewDir, halfDir), 5.0);
+        float specular = fresnel * pow(specAngle, 1.0 / (roughness + 0.001));
+
+        // Apply reflections (environment mapping with roughness)
+        vec3 reflection = texture(skybox, reflect(-viewDir, adjustedNormal)).rgb;
+        vec3 reflectionColor = mix(reflection, detailedBaseColor, metallic);
+
+        // Final color computation
+        vec3 finalColor = ambient + diffuse + specular * reflectionColor;
+        finalColor += emissive; // Add emissive contribution
+
+        color.rgb = finalColor;
+        color.a = opacity; // Apply opacity
+        color.rgb = pow(color.rgb, vec3(1.0, 1.0, 1.0) / 2.2); // Gamma correction
+    } else if (object_id == -1) 
+    {
+        color.rgb = vec3(1.0, 0.0, 0.0);
+        
+    }
+    else
+    {
+        color.rgb = vec3(1.0, 0.0, 0.0);
+        
+    }
+
 } 
 

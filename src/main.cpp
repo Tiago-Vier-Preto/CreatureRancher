@@ -30,6 +30,7 @@
 
 // Headers locais, definidos na pasta "include/"
 #include "utils.h"
+
 #include "matrices.h"
 #include "creature.hpp"
 
@@ -97,7 +98,6 @@ struct ObjModel
     }
 };
 
-
 // Declaração de funções utilizadas para pilha de matrizes de modelagem.
 void PushMatrix(glm::mat4 M);
 void PopMatrix(glm::mat4& M);
@@ -130,9 +130,6 @@ void TextRendering_PrintMatrixVectorProductDivW(GLFWwindow* window, glm::mat4 M,
 
 // Funções abaixo renderizam como texto na janela OpenGL algumas matrizes e
 // outras informações do programa. Definidas após main().
-void TextRendering_ShowModelViewProjection(GLFWwindow* window, glm::mat4 projection, glm::mat4 view, glm::mat4 model, glm::vec4 p_model);
-void TextRendering_ShowEulerAngles(GLFWwindow* window);
-void TextRendering_ShowProjection(GLFWwindow* window);
 void TextRendering_ShowFramesPerSecond(GLFWwindow* window);
 
 // Funções callback para comunicação com o sistema operacional e interação do
@@ -303,17 +300,8 @@ int main(int argc, char* argv[])
     glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
     FramebufferSizeCallback(window, window_width, window_height); // Forçamos a chamada do callback acima, para definir g_ScreenRatio.
 
-    // Imprimimos no terminal informações sobre a GPU do sistema
-    const GLubyte *vendor      = glGetString(GL_VENDOR);
-    const GLubyte *renderer    = glGetString(GL_RENDERER);
-    const GLubyte *glversion   = glGetString(GL_VERSION);
-    const GLubyte *glslversion = glGetString(GL_SHADING_LANGUAGE_VERSION);
-
-    printf("GPU: %s, %s, OpenGL %s, GLSL %s\n", vendor, renderer, glversion, glslversion);
-
     // Carregamos os shaders de vértices e de fragmentos que serão utilizados
     // para renderização. Veja slides 180-200 do documento Aula_03_Rendering_Pipeline_Grafico.pdf.
-    //
     LoadShadersFromFiles();
 
     // Carregamos duas imagens para serem utilizadas como textura
@@ -321,6 +309,30 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../data/tc-earth_nightmap_citylights.gif"); // TextureImage1
     LoadTextureImage("../../data/aerial_grass_rock/textures/aerial_grass_rock_diff_4k.jpg"); // TextureImage2
     LoadTextureImage("../../data/cryo-slime/textures/bake.png"); // TextureImage3
+
+    std::vector<std::string> faces
+    {
+        "../../data/skybox/right.jpg",
+        "../../data/skybox/left.jpg",
+        "../../data/skybox/top.jpg",
+        "../../data/skybox/bottom.jpg",
+        "../../data/skybox/back.jpg",
+        "../../data/skybox/front.jpg"
+    };
+    stbi_set_flip_vertically_on_load(false);
+    LoadCubemap(faces);
+    stbi_set_flip_vertically_on_load(true);
+
+    // Texturas da arma
+    LoadTextureImage("../../data/weapon/textures/AOMaterial.png"); // TextureImage4
+    LoadTextureImage("../../data/weapon/textures/BASECOLOR_Material.png"); // TextureImage5
+    LoadTextureImage("../../data/weapon/textures/CURVATUREMaterial.png"); // TextureImage6
+    LoadTextureImage("../../data/weapon/textures/EMISSIVE_Material.png"); // TextureImage7
+    LoadTextureImage("../../data/weapon/textures/METALLICMaterial.png"); // TextureImage8
+    LoadTextureImage("../../data/weapon/textures/NORMAL_Material.png"); // TextureImage9
+    LoadTextureImage("../../data/weapon/textures/OPACITYMaterial.png"); // TextureImage10
+    LoadTextureImage("../../data/weapon/textures/ROUGHNESS.png"); // TextureImage11
+
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel spheremodel("../../data/sphere.obj");
     ComputeNormals(&spheremodel);
@@ -342,6 +354,10 @@ int main(int argc, char* argv[])
     ComputeNormals(&cubemodel);
     BuildTrianglesAndAddToVirtualScene(&cubemodel);
 
+    ObjModel weapon("../../data/weapon/source/weapon.obj");
+    ComputeNormals(&weapon);
+    BuildTrianglesAndAddToVirtualScene(&weapon);
+
     if ( argc > 1 )
     {
         ObjModel model(argv[1]);
@@ -362,19 +378,6 @@ int main(int argc, char* argv[])
     float prev_time = (float)glfwGetTime();
 
     std::vector<Creature> creatures = SpawnCreatures(10, map_width, map_height); 
-
-    std::vector<std::string> faces
-    {
-        "../../data/skybox/right.jpg",
-        "../../data/skybox/left.jpg",
-        "../../data/skybox/top.jpg",
-        "../../data/skybox/bottom.jpg",
-        "../../data/skybox/back.jpg",
-        "../../data/skybox/front.jpg"
-    };
-    stbi_set_flip_vertically_on_load(false);
-    LoadCubemap(faces);
-    stbi_set_flip_vertically_on_load(true);
 
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
@@ -449,7 +452,6 @@ int main(int argc, char* argv[])
 
         if (g_DkeyPressed) camera_position_c +=  u_vector * speed * delta_t;
         
-
         // Computamos a matriz "View" utilizando os parâmetros da câmera para
         // definir o sistema de coordenadas da câmera.  Veja slides 2-14, 184-190 e 236-242 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
         glm::mat4 view = Matrix_Camera_View(camera_position_c, camera_view_vector, camera_up_vector);
@@ -496,6 +498,7 @@ int main(int argc, char* argv[])
         #define PLANE    2
         #define CREATURE 3
         #define CUBE     4
+        #define WEAPON   5
 
         // Desenhamos o modelo da esfera
         model = Matrix_Translate(-1.0f,0.0f,0.0f)
@@ -549,13 +552,25 @@ int main(int argc, char* argv[])
         glUniform1i(glGetUniformLocation(g_SkyboxProgramID, "skybox"), 4);
         DrawVirtualObject("cube");
 
+        // Desenhamos o modelo da arma
+        glm::vec4 weapon_position = camera_position_c + 0.4f * normalize(camera_view_vector) - 0.25f * normalize(crossproduct(camera_up_vector, camera_view_vector)) - 0.1f * camera_up_vector;
+        glm::vec4 weapon_direction = normalize(camera_view_vector);
+        glm::vec4 weapon_right = normalize(crossproduct(camera_up_vector, weapon_direction));
+        glm::vec4 weapon_up = normalize(crossproduct(weapon_direction, weapon_right));
 
-        // Imprimimos na tela os ângulos de Euler que controlam a rotação do
-        // terceiro cubo.
-        TextRendering_ShowEulerAngles(window);
+        glm::mat4 weapon_rotation = glm::mat4(weapon_right.x, weapon_right.y, weapon_right.z, 0.0f,
+                                              weapon_up.x, weapon_up.y, weapon_up.z, 0.0f,
+                                              weapon_direction.x, weapon_direction.y, weapon_direction.z, 0.0f,
+                                              0.0f, 0.0f, 0.0f, 1.0f);
 
-        // Imprimimos na informação sobre a matriz de projeção sendo utilizada.
-        TextRendering_ShowProjection(window);
+        model = Matrix_Translate(weapon_position.x, weapon_position.y, weapon_position.z)
+              * weapon_rotation
+              * Matrix_Scale(0.001f, 0.001f, 0.001f); 
+
+        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, WEAPON);
+        glUniform2f(tilingLocation, 1.0f, 1.0f);
+        DrawVirtualObject("weapon");
 
         // Imprimimos na tela informação sobre o número de quadros renderizados
         // por segundo (frames per second).
@@ -755,6 +770,18 @@ void LoadShadersFromFiles()
 
     // skybox
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "skybox"), 4);
+    
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage4"), 5);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage5"), 6);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage6"), 7);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage7"), 8);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage8"), 9);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage9"), 10);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage10"), 11);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage11"), 12);
+
+    
+    
 
     glUseProgram(0);
 }
@@ -1246,39 +1273,6 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
     // cursor como sendo a última posição conhecida do cursor.
     g_LastCursorPosX = xpos;
     g_LastCursorPosY = ypos;
-    
-
-    if (g_RightMouseButtonPressed)
-    {
-        // Deslocamento do cursor do mouse em x e y de coordenadas de tela!
-        float dx = xpos - g_LastCursorPosX;
-        float dy = ypos - g_LastCursorPosY;
-    
-        // Atualizamos parâmetros da antebraço com os deslocamentos
-        g_ForearmAngleZ -= 0.01f*dx;
-        g_ForearmAngleX += 0.01f*dy;
-    
-        // Atualizamos as variáveis globais para armazenar a posição atual do
-        // cursor como sendo a última posição conhecida do cursor.
-        g_LastCursorPosX = xpos;
-        g_LastCursorPosY = ypos;
-    }
-
-    if (g_MiddleMouseButtonPressed)
-    {
-        // Deslocamento do cursor do mouse em x e y de coordenadas de tela!
-        float dx = xpos - g_LastCursorPosX;
-        float dy = ypos - g_LastCursorPosY;
-    
-        // Atualizamos parâmetros da antebraço com os deslocamentos
-        g_TorsoPositionX += 0.01f*dx;
-        g_TorsoPositionY -= 0.01f*dy;
-    
-        // Atualizamos as variáveis globais para armazenar a posição atual do
-        // cursor como sendo a última posição conhecida do cursor.
-        g_LastCursorPosX = xpos;
-        g_LastCursorPosY = ypos;
-    }
 }
 
 // Função callback chamada sempre que o usuário movimenta a "rodinha" do mouse.
@@ -1335,58 +1329,16 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     //   Se apertar tecla Z       então g_AngleZ += delta;
     //   Se apertar tecla shift+Z então g_AngleZ -= delta;
 
-    float delta = 3.141592 / 16; // 22.5 graus, em radianos.
-
-    if (key == GLFW_KEY_X && action == GLFW_PRESS)
-    {
-        g_AngleX += (mod & GLFW_MOD_SHIFT) ? -delta : delta;
-    }
-
-    if (key == GLFW_KEY_Y && action == GLFW_PRESS)
-    {
-        g_AngleY += (mod & GLFW_MOD_SHIFT) ? -delta : delta;
-    }
-    if (key == GLFW_KEY_Z && action == GLFW_PRESS)
-    {
-        g_AngleZ += (mod & GLFW_MOD_SHIFT) ? -delta : delta;
-    }
-
     if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS)
         g_IsSprinting = true;
     else if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_RELEASE)
         g_IsSprinting = false;
 
-    // Se o usuário apertar a tecla espaço, resetamos os ângulos de Euler para zero.
+        // Se o usuário apertar a tecla espaço, resetamos os ângulos de Euler para zero.
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS && !g_IsJumping)
     {
-        g_AngleX = 0.0f;
-        g_AngleY = 0.0f;
-        g_AngleZ = 0.0f;
-        g_ForearmAngleX = 0.0f;
-        g_ForearmAngleZ = 0.0f;
-        g_TorsoPositionX = 0.0f;
-        g_TorsoPositionY = 0.0f;
-
         g_IsJumping = true;
         g_CameraVerticalVelocity = JUMP_VELOCITY;
-    }
-
-    // Se o usuário apertar a tecla P, utilizamos projeção perspectiva.
-    if (key == GLFW_KEY_P && action == GLFW_PRESS)
-    {
-        g_UsePerspectiveProjection = true;
-    }
-
-    // Se o usuário apertar a tecla O, utilizamos projeção ortográfica.
-    if (key == GLFW_KEY_O && action == GLFW_PRESS)
-    {
-        g_UsePerspectiveProjection = false;
-    }
-
-    // Se o usuário apertar a tecla H, fazemos um "toggle" do texto informativo mostrado na tela.
-    if (key == GLFW_KEY_H && action == GLFW_PRESS)
-    {
-        g_ShowInfoText = !g_ShowInfoText;
     }
 
     // Se o usuário apertar a tecla R, recarregamos os shaders dos arquivos "shader_fragment.glsl" e "shader_vertex.glsl".
@@ -1402,98 +1354,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
 void ErrorCallback(int error, const char* description)
 {
     fprintf(stderr, "ERROR: GLFW: %s\n", description);
-}
-
-// Esta função recebe um vértice com coordenadas de modelo p_model e passa o
-// mesmo por todos os sistemas de coordenadas armazenados nas matrizes model,
-// view, e projection; e escreve na tela as matrizes e pontos resultantes
-// dessas transformações.
-void TextRendering_ShowModelViewProjection(
-    GLFWwindow* window,
-    glm::mat4 projection,
-    glm::mat4 view,
-    glm::mat4 model,
-    glm::vec4 p_model
-)
-{
-    if ( !g_ShowInfoText )
-        return;
-
-    glm::vec4 p_world = model*p_model;
-    glm::vec4 p_camera = view*p_world;
-    glm::vec4 p_clip = projection*p_camera;
-    glm::vec4 p_ndc = p_clip / p_clip.w;
-
-    float pad = TextRendering_LineHeight(window);
-
-    TextRendering_PrintString(window, " Model matrix             Model     In World Coords.", -1.0f, 1.0f-pad, 1.0f);
-    TextRendering_PrintMatrixVectorProduct(window, model, p_model, -1.0f, 1.0f-2*pad, 1.0f);
-
-    TextRendering_PrintString(window, "                                        |  ", -1.0f, 1.0f-6*pad, 1.0f);
-    TextRendering_PrintString(window, "                            .-----------'  ", -1.0f, 1.0f-7*pad, 1.0f);
-    TextRendering_PrintString(window, "                            V              ", -1.0f, 1.0f-8*pad, 1.0f);
-
-    TextRendering_PrintString(window, " View matrix              World     In Camera Coords.", -1.0f, 1.0f-9*pad, 1.0f);
-    TextRendering_PrintMatrixVectorProduct(window, view, p_world, -1.0f, 1.0f-10*pad, 1.0f);
-
-    TextRendering_PrintString(window, "                                        |  ", -1.0f, 1.0f-14*pad, 1.0f);
-    TextRendering_PrintString(window, "                            .-----------'  ", -1.0f, 1.0f-15*pad, 1.0f);
-    TextRendering_PrintString(window, "                            V              ", -1.0f, 1.0f-16*pad, 1.0f);
-
-    TextRendering_PrintString(window, " Projection matrix        Camera                    In NDC", -1.0f, 1.0f-17*pad, 1.0f);
-    TextRendering_PrintMatrixVectorProductDivW(window, projection, p_camera, -1.0f, 1.0f-18*pad, 1.0f);
-
-    int width, height;
-    glfwGetFramebufferSize(window, &width, &height);
-
-    glm::vec2 a = glm::vec2(-1, -1);
-    glm::vec2 b = glm::vec2(+1, +1);
-    glm::vec2 p = glm::vec2( 0,  0);
-    glm::vec2 q = glm::vec2(width, height);
-
-    glm::mat4 viewport_mapping = Matrix(
-        (q.x - p.x)/(b.x-a.x), 0.0f, 0.0f, (b.x*p.x - a.x*q.x)/(b.x-a.x),
-        0.0f, (q.y - p.y)/(b.y-a.y), 0.0f, (b.y*p.y - a.y*q.y)/(b.y-a.y),
-        0.0f , 0.0f , 1.0f , 0.0f ,
-        0.0f , 0.0f , 0.0f , 1.0f
-    );
-
-    TextRendering_PrintString(window, "                                                       |  ", -1.0f, 1.0f-22*pad, 1.0f);
-    TextRendering_PrintString(window, "                            .--------------------------'  ", -1.0f, 1.0f-23*pad, 1.0f);
-    TextRendering_PrintString(window, "                            V                           ", -1.0f, 1.0f-24*pad, 1.0f);
-
-    TextRendering_PrintString(window, " Viewport matrix           NDC      In Pixel Coords.", -1.0f, 1.0f-25*pad, 1.0f);
-    TextRendering_PrintMatrixVectorProductMoreDigits(window, viewport_mapping, p_ndc, -1.0f, 1.0f-26*pad, 1.0f);
-}
-
-// Escrevemos na tela os ângulos de Euler definidos nas variáveis globais
-// g_AngleX, g_AngleY, e g_AngleZ.
-void TextRendering_ShowEulerAngles(GLFWwindow* window)
-{
-    if ( !g_ShowInfoText )
-        return;
-
-    float pad = TextRendering_LineHeight(window);
-
-    char buffer[80];
-    snprintf(buffer, 80, "Euler Angles rotation matrix = Z(%.2f)*Y(%.2f)*X(%.2f)\n", g_AngleZ, g_AngleY, g_AngleX);
-
-    TextRendering_PrintString(window, buffer, -1.0f+pad/10, -1.0f+2*pad/10, 1.0f);
-}
-
-// Escrevemos na tela qual matriz de projeção está sendo utilizada.
-void TextRendering_ShowProjection(GLFWwindow* window)
-{
-    if ( !g_ShowInfoText )
-        return;
-
-    float lineheight = TextRendering_LineHeight(window);
-    float charwidth = TextRendering_CharWidth(window);
-
-    if ( g_UsePerspectiveProjection )
-        TextRendering_PrintString(window, "Perspective", 1.0f-13*charwidth, -1.0f+2*lineheight/10, 1.0f);
-    else
-        TextRendering_PrintString(window, "Orthographic", 1.0f-13*charwidth, -1.0f+2*lineheight/10, 1.0f);
 }
 
 // Escrevemos na tela o número de quadros renderizados por segundo (frames per
