@@ -22,9 +22,16 @@ uniform mat4 projection;
 #define SPHERE 0
 #define BUNNY  1
 #define PLANE  2
-#define CREATURE 3
-#define SKYBOX  4
-#define WEAPON 5
+#define ANEMO_SLIME 3
+#define CRYO_SLIME 4
+#define DENDRO_SLIME 5
+#define ELECTRO_SLIME 6
+#define FIRE_SLIME 7
+#define GEO_SLIME 8
+#define MUTATED_ELECTRO_SLIME 9
+#define WATER_SLIME 10
+#define SKYBOX  11
+#define WEAPON 12
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -35,19 +42,28 @@ uniform vec4 bbox_max;
 uniform sampler2D TextureImage0;
 uniform sampler2D TextureImage1;
 uniform sampler2D TextureImage2;
-uniform sampler2D TextureImage3; // Creature
+
+ // Slimes
+uniform sampler2D anemo;
+uniform sampler2D cryo;
+uniform sampler2D dendro;
+uniform sampler2D electro;
+uniform sampler2D fire;
+uniform sampler2D geo;
+uniform sampler2D mutated_electro;
+uniform sampler2D water;
 
 uniform samplerCube skybox; // Skybox
 
 // texturas da arma 
-uniform sampler2D TextureImage4;  // AOTexture
-uniform sampler2D TextureImage5;  // Base Color
-uniform sampler2D TextureImage6;  // Curvature
-uniform sampler2D TextureImage7;  // Emmissive
-uniform sampler2D TextureImage8;  // Metallic
-uniform sampler2D TextureImage9;  // Normal
-uniform sampler2D TextureImage10; // Opacity
-uniform sampler2D TextureImage11; // Roughness
+uniform sampler2D TextureImage12;  // AOTexture
+uniform sampler2D TextureImage13;  // Base Color
+uniform sampler2D TextureImage14;  // Curvature
+uniform sampler2D TextureImage15;  // Emmissive
+uniform sampler2D TextureImage16;  // Metallic
+uniform sampler2D TextureImage17;  // Normal
+uniform sampler2D TextureImage18; // Opacity
+uniform sampler2D TextureImage19; // Roughness
 
 
 
@@ -179,13 +195,118 @@ void main()
 
         color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
     }
-    else if (object_id == CREATURE)
+    else if (object_id == ANEMO_SLIME)
     {
         // Coordenadas de textura do plano, obtidas do arquivo OBJ.
         U = texcoords.x;
         V = texcoords.y;
 
-        vec3 Kd0 = texture(TextureImage3, vec2(U,V)).rgb;
+        vec3 Kd0 = texture(anemo, vec2(U,V)).rgb;
+
+        float lambert = max(0,dot(n,l));
+
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == CRYO_SLIME)
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(cryo, vec2(U,V)).rgb;
+
+        float lambert = max(0,dot(n,l));
+
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == DENDRO_SLIME)
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(dendro, vec2(U,V)).rgb;
+
+        float lambert = max(0,dot(n,l));
+
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == ELECTRO_SLIME)
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(electro, vec2(U,V)).rgb;
+
+        float lambert = max(0,dot(n,l));
+
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == FIRE_SLIME)
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(fire, vec2(U,V)).rgb;
+
+        float lambert = max(0,dot(n,l));
+
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == GEO_SLIME)
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(geo, vec2(U,V)).rgb;
+
+        float lambert = max(0,dot(n,l));
+
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == MUTATED_ELECTRO_SLIME)
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(mutated_electro, vec2(U,V)).rgb;
+
+        float lambert = max(0,dot(n,l));
+
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == WATER_SLIME)
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(water, vec2(U,V)).rgb;
 
         float lambert = max(0,dot(n,l));
 
@@ -210,18 +331,18 @@ void main()
         vec4 n = normalize(normal);
 
         // Sample textures
-        vec3 baseColor = texture(TextureImage5, texcoords).rgb;
-        float ao = texture(TextureImage4, texcoords).r;
-        vec3 emissive = texture(TextureImage7, texcoords).rgb;
-        float metallic = texture(TextureImage8, texcoords).r;
-        float roughness = texture(TextureImage11, texcoords).r;
-        float opacity = texture(TextureImage10, texcoords).r;
+        vec3 baseColor = texture(TextureImage13, texcoords).rgb;
+        float ao = texture(TextureImage12, texcoords).r;
+        vec3 emissive = texture(TextureImage15, texcoords).rgb;
+        float metallic = texture(TextureImage16, texcoords).r;
+        float roughness = texture(TextureImage19, texcoords).r;
+        float opacity = texture(TextureImage18, texcoords).r;
 
         // Curvature map for detail enhancement
-        float curvature = texture(TextureImage6, texcoords).r;
+        float curvature = texture(TextureImage14, texcoords).r;
 
         // Adjust normals using Tangent Space Normal Mapping
-        vec3 tangentNormal = texture(TextureImage9, texcoords).rgb * 2.0 - 1.0;
+        vec3 tangentNormal = texture(TextureImage17, texcoords).rgb * 2.0 - 1.0;
 
         // Compute TBN matrix (Tangent-Bitangent-Normal)
         vec3 T = normalize(vec3(model * vec4(1.0, 0.0, 0.0, 0.0)));

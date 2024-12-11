@@ -33,6 +33,7 @@
 
 #include "matrices.h"
 #include "creature.hpp"
+#include "slime_types.hpp"
 
 #define window_width 1280
 #define window_height 720
@@ -308,7 +309,15 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../data/tc-earth_daymap_surface.jpg");      // TextureImage0
     LoadTextureImage("../../data/tc-earth_nightmap_citylights.gif"); // TextureImage1
     LoadTextureImage("../../data/aerial_grass_rock/textures/aerial_grass_rock_diff_4k.jpg"); // TextureImage2
-    LoadTextureImage("../../data/cryo-slime/textures/bake.png"); // TextureImage3
+    
+    LoadTextureImage("../../data/anemo-slime/textures/bake.png"); // TextureImage3
+    LoadTextureImage("../../data/cryo-slime/textures/bake.png"); // TextureImage4
+    LoadTextureImage("../../data/dendro-slime/textures/body_bake.png"); // TextureImage5
+    LoadTextureImage("../../data/electro-slime/textures/final_bake.png"); // TextureImage6
+    LoadTextureImage("../../data/fire-slime/textures/body.png"); // TextureImage7
+    LoadTextureImage("../../data/geo-slime/textures/bake.png"); // TextureImage8
+    LoadTextureImage("../../data/mutated-electro-slime/textures/final_bake.png"); // TextureImage9
+    LoadTextureImage("../../data/water-slime/textures/final_bake.001.png"); // TextureImage10
 
     std::vector<std::string> faces
     {
@@ -324,14 +333,14 @@ int main(int argc, char* argv[])
     stbi_set_flip_vertically_on_load(true);
 
     // Texturas da arma
-    LoadTextureImage("../../data/weapon/textures/AOMaterial.png"); // TextureImage4
-    LoadTextureImage("../../data/weapon/textures/BASECOLOR_Material.png"); // TextureImage5
-    LoadTextureImage("../../data/weapon/textures/CURVATUREMaterial.png"); // TextureImage6
-    LoadTextureImage("../../data/weapon/textures/EMISSIVE_Material.png"); // TextureImage7
-    LoadTextureImage("../../data/weapon/textures/METALLICMaterial.png"); // TextureImage8
-    LoadTextureImage("../../data/weapon/textures/NORMAL_Material.png"); // TextureImage9
-    LoadTextureImage("../../data/weapon/textures/OPACITYMaterial.png"); // TextureImage10
-    LoadTextureImage("../../data/weapon/textures/ROUGHNESS.png"); // TextureImage11
+    LoadTextureImage("../../data/weapon/textures/AOMaterial.png"); // TextureImage11
+    LoadTextureImage("../../data/weapon/textures/BASECOLOR_Material.png"); // TextureImage12
+    LoadTextureImage("../../data/weapon/textures/CURVATUREMaterial.png"); // TextureImage13
+    LoadTextureImage("../../data/weapon/textures/EMISSIVE_Material.png"); // TextureImage14
+    LoadTextureImage("../../data/weapon/textures/METALLICMaterial.png"); // TextureImage15
+    LoadTextureImage("../../data/weapon/textures/NORMAL_Material.png"); // TextureImage16
+    LoadTextureImage("../../data/weapon/textures/OPACITYMaterial.png"); // TextureImage17
+    LoadTextureImage("../../data/weapon/textures/ROUGHNESS.png"); // TextureImage18
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel spheremodel("../../data/sphere.obj");
@@ -346,9 +355,37 @@ int main(int argc, char* argv[])
     ComputeNormals(&planemodel);
     BuildTrianglesAndAddToVirtualScene(&planemodel);
 
+    ObjModel anemomodel("../../data/anemo-slime/source/anemo.obj");
+    ComputeNormals(&anemomodel);
+    BuildTrianglesAndAddToVirtualScene(&anemomodel);
+
     ObjModel cryomodel("../../data/cryo-slime/source/cryo.obj");
     ComputeNormals(&cryomodel);
     BuildTrianglesAndAddToVirtualScene(&cryomodel);
+
+    ObjModel dendromodel("../../data/dendro-slime/source/dendro.obj");
+    ComputeNormals(&dendromodel);
+    BuildTrianglesAndAddToVirtualScene(&dendromodel);
+
+    ObjModel electromodel("../../data/electro-slime/source/electro.obj");
+    ComputeNormals(&electromodel);
+    BuildTrianglesAndAddToVirtualScene(&electromodel);
+
+    ObjModel firemodel("../../data/fire-slime/source/fire.obj");
+    ComputeNormals(&firemodel);
+    BuildTrianglesAndAddToVirtualScene(&firemodel);
+
+    ObjModel geomodel("../../data/geo-slime/source/geo.obj");
+    ComputeNormals(&geomodel);
+    BuildTrianglesAndAddToVirtualScene(&geomodel);
+
+    ObjModel mutated_electromodel("../../data/mutated-electro-slime/source/mutated-electro.obj");
+    ComputeNormals(&mutated_electromodel);
+    BuildTrianglesAndAddToVirtualScene(&mutated_electromodel);
+
+    ObjModel watermodel("../../data/water-slime/source/water.obj");
+    ComputeNormals(&watermodel);
+    BuildTrianglesAndAddToVirtualScene(&watermodel);
 
     ObjModel cubemodel("../../data/skybox/skybox.obj");
     ComputeNormals(&cubemodel);
@@ -377,7 +414,7 @@ int main(int argc, char* argv[])
     
     float prev_time = (float)glfwGetTime();
 
-    std::vector<Creature> creatures = SpawnCreatures(10, map_width, map_height); 
+    std::vector<Creature*> creatures = SpawnCreatures(10, map_width, map_height); 
 
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
@@ -430,7 +467,7 @@ int main(int argc, char* argv[])
         float speed = g_IsSprinting ? SPRINT_SPEED : NORMAL_SPEED;
 
         for (auto& creature : creatures) {
-            creature.Update(delta_t);
+            creature->Update(delta_t);
         }
 
         g_CameraVerticalVelocity += GRAVITY * delta_t;
@@ -497,8 +534,8 @@ int main(int argc, char* argv[])
         #define BUNNY    1
         #define PLANE    2
         #define CREATURE 3
-        #define CUBE     4
-        #define WEAPON   5
+        #define CUBE     11
+        #define WEAPON   12
 
         // Desenhamos o modelo da esfera
         model = Matrix_Translate(-1.0f,0.0f,0.0f)
@@ -527,15 +564,15 @@ int main(int argc, char* argv[])
         DrawVirtualObject("the_plane");
 
         for (const auto& creature : creatures) {
-            glm::vec4 position = creature.GetPosition();
-            float rotation_angle = creature.GetRotationAngle();
+            glm::vec4 position = creature->GetPosition();
+            float rotation_angle = creature->GetRotationAngle();
             glm::mat4 model = Matrix_Translate(position.x, position.y - 1.5f, position.z) // Ajusta a posição Y para GROUND_LEVEL
                             * Matrix_Rotate_Y(rotation_angle) // Aplica a rotação em torno do eixo Y
                             * Matrix_Rotate_X(glm::radians(-90.0f)) // Rotaciona 90 graus em torno do eixo X, se necessário
                             * Matrix_Scale(0.8f, 0.8f, 0.8f); // Escala o modelo
 
             glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-            glUniform1i(g_object_id_uniform, CREATURE);
+            glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
             glUniform2f(tilingLocation, 1.0f, 1.0f);
             DrawVirtualObject("obj1");
             DrawVirtualObject("obj2");
@@ -766,19 +803,26 @@ void LoadShadersFromFiles()
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage0"), 0);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage1"), 1);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 2);
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage3"), 3);
 
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "anemo"), 3);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "cryo"), 4);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "dendro"), 5);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "electro"), 6);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "fire"), 7);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "geo"), 8);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "mutated_electro"), 9);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "water"), 10);
     // skybox
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "skybox"), 4);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "skybox"), 11);
     
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage4"), 5);
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage5"), 6);
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage6"), 7);
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage7"), 8);
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage8"), 9);
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage9"), 10);
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage10"), 11);
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage11"), 12);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage12"), 12);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage13"), 13);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage14"), 14);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage15"), 15);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage16"), 16);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage17"), 17);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage18"), 18);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage19"), 19);
 
     
     

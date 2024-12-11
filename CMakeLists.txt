@@ -13,6 +13,8 @@ set(SOURCES
   src/glad.c
   src/creature.cpp
   src/creature.hpp
+  src/slime_types.hpp
+  src/slime_types.cpp
 )
 
 cmake_minimum_required(VERSION 3.5.0)
