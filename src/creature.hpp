@@ -3,6 +3,7 @@
 
 #include <glm/vec4.hpp>
 #include <vector>
+#include <string>
 
 class Creature {
 public:
@@ -14,6 +15,7 @@ public:
     float GetRotationAngle() const;
     virtual int GetType() const = 0;
 
+
     glm::vec4 position;
     float vertical_velocity;
     bool is_jumping;
@@ -23,6 +25,10 @@ public:
     float jump_chance;
     float gravity;
     glm::vec4 direction; // Direção do movimento
+
+    void setPosition(glm::vec4 position);
+    
+    bool captured = false;
 
     static const float GROUND_LEVEL;
     static const float MIN_DISTANCE; // Distância mínima entre as criaturas

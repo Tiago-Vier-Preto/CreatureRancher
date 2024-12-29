@@ -322,6 +322,10 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\src\creature.hpp" />
     <ClInclude Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\src\slime_types.hpp" />
     <ClCompile Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\src\slime_types.cpp" />
+    <ClInclude Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\src\curve.hpp" />
+    <ClCompile Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\src\curve.cpp" />
+    <ClInclude Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\src\collisions.hpp" />
+    <ClCompile Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\src\collisions.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\build\ZERO_CHECK.vcxproj">

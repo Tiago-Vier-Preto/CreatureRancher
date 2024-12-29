@@ -15,6 +15,10 @@ set(SOURCES
   src/creature.hpp
   src/slime_types.hpp
   src/slime_types.cpp
+  src/curve.hpp
+  src/curve.cpp
+  src/collisions.hpp
+  src/collisions.cpp
 )
 
 cmake_minimum_required(VERSION 3.5.0)

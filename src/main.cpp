@@ -34,6 +34,8 @@
 #include "matrices.h"
 #include "creature.hpp"
 #include "slime_types.hpp"
+#include "curve.hpp"
+#include "collisions.hpp"
 
 #define window_width 1280
 #define window_height 720
@@ -407,6 +409,11 @@ int main(int argc, char* argv[])
     float prev_time = (float)glfwGetTime();
 
     std::vector<Creature*> creatures = SpawnCreatures(20, map_width, map_height); 
+    float captureTime = 0.0f;
+    glm::vec4 lastPosition;
+    float lastCaptureTime = 0.0f;
+
+    std::vector<std::pair<int, int>> potentialCollisions;
 
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
@@ -535,10 +542,140 @@ int main(int argc, char* argv[])
         glUniform2f(tilingLocation, 10.0f, 10.0f);
         DrawVirtualObject("the_plane");
 
+        // Desenhamos o modelo da arma
+        glm::vec4 weapon_position = camera_position_c + 0.4f * normalize(camera_view_vector) - 0.25f * normalize(crossproduct(camera_up_vector, camera_view_vector)) - 0.1f * camera_up_vector;
+        glm::vec4 weapon_direction = normalize(camera_view_vector);
+        glm::vec4 weapon_right = normalize(crossproduct(camera_up_vector, weapon_direction));
+        glm::vec4 weapon_up = normalize(crossproduct(weapon_direction, weapon_right));
+
+        glm::mat4 weapon_rotation = glm::mat4(weapon_right.x, weapon_right.y, weapon_right.z, 0.0f,
+                                              weapon_up.x, weapon_up.y, weapon_up.z, 0.0f,
+                                              weapon_direction.x, weapon_direction.y, weapon_direction.z, 0.0f,
+                                              0.0f, 0.0f, 0.0f, 1.0f);
+
+        model = Matrix_Translate(weapon_position.x, weapon_position.y, weapon_position.z)
+              * weapon_rotation
+              * Matrix_Scale(0.001f, 0.001f, 0.001f); 
+
+        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, WEAPON);
+        glUniform2f(tilingLocation, 1.0f, 1.0f);
+        DrawVirtualObject("weapon");
+
+        glm::vec3 cubeCenter = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 cubeSize = glm::vec3(100.0f, 100.0f, 100.0f);
+
+        AABB frontFace;
+        frontFace.min = cubeCenter + glm::vec3(-cubeSize.x, -cubeSize.y, cubeSize.z);
+        frontFace.max = cubeCenter + glm::vec3(cubeSize.x, cubeSize.y, cubeSize.z);
+        glm::vec4 frontFaceDirection = glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
+
+        AABB backFace;
+        backFace.min = cubeCenter + glm::vec3(-cubeSize.x, -cubeSize.y, -cubeSize.z);
+        backFace.max = cubeCenter + glm::vec3(cubeSize.x, cubeSize.y, -cubeSize.z);
+        glm::vec4 backFaceDirection = glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
+
+        AABB leftFace;
+        leftFace.min = cubeCenter + glm::vec3(-cubeSize.x, -cubeSize.y, -cubeSize.z);
+        leftFace.max = cubeCenter + glm::vec3(-cubeSize.x, cubeSize.y, cubeSize.z);
+        glm::vec4 leftFaceDirection = glm::vec4(-1.0f, 0.0f, 0.0f, 0.0f);
+
+        AABB rightFace;
+        
+        rightFace.min = cubeCenter + glm::vec3(cubeSize.x, -cubeSize.y, -cubeSize.z);
+        rightFace.max = cubeCenter + glm::vec3(cubeSize.x, cubeSize.y, cubeSize.z);
+        glm::vec4 rightFaceDirection = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+
+        AABB cameraAABB = ComputeAABB(glm::vec3(camera_position_c), glm::vec3(0.7f, 0.7f, 2.5f));
+
+        // Fase de colisao Broad Phase
+        if (CheckAABBOverlap(cameraAABB, frontFace)) potentialCollisions.push_back({-2, 0});
+        if (CheckAABBOverlap(cameraAABB, backFace)) potentialCollisions.push_back({-2, 1});
+        if (CheckAABBOverlap(cameraAABB, leftFace)) potentialCollisions.push_back({-2, 2});
+        if (CheckAABBOverlap(cameraAABB, rightFace)) potentialCollisions.push_back({-2, 3});
+        
+        for (size_t i = 0; i < creatures.size(); ++i) {
+            AABB creatureAABB = ComputeAABB(creatures[i]->GetPosition(), glm::vec3(0.55f, 0.55f, 0.55f));
+            if (CheckAABBOverlap(cameraAABB, creatureAABB)) {
+                potentialCollisions.push_back({-1, i}); // -1 para identificar a camera
+            }
+        }
+
+        // Fase de colisao Narrow Phase
+        for (const auto& pair : potentialCollisions) {
+            if (pair.first == -1) { // Colisão entre a camera e uma criatura
+                int creatureIndex = pair.second;
+                if (CheckSphereSphereOverlap(camera_position_c, 0.6,
+                                    creatures[creatureIndex]->GetPosition(), 0.6)) {
+                    glm::vec4 direction = camera_position_c - creatures[creatureIndex]->GetPosition();
+                    float magnitude = glm::length(direction);
+                    if (magnitude > 1e-5f) {
+                        direction = glm::normalize(direction);
+                        camera_position_c += direction * ((speed == SPRINT_SPEED ? SPRINT_SPEED : NORMAL_SPEED) * delta_t * 0.05f);
+                    }
+                    if (speed == SPRINT_SPEED) {
+                        camera_position_c += direction * SPRINT_SPEED * delta_t * 0.05f;
+                    } else if (speed == NORMAL_SPEED) {
+                        camera_position_c += direction * NORMAL_SPEED * delta_t * 0.05f;
+                    } 
+                }
+            } else if(pair.first == -2) { // Colisão camera com as faces do cubo
+                if (pair.second == 0) {
+                    if (speed == SPRINT_SPEED) camera_position_c += frontFaceDirection * SPRINT_SPEED * delta_t * 0.05f;
+                    else if (speed == NORMAL_SPEED) camera_position_c -= frontFaceDirection * NORMAL_SPEED * delta_t * 0.05f;
+                } else if (pair.second == 1) {
+                    if (speed == SPRINT_SPEED) camera_position_c += backFaceDirection * SPRINT_SPEED * delta_t * 0.05f;
+                    else if (speed == NORMAL_SPEED) camera_position_c -= backFaceDirection * NORMAL_SPEED * delta_t * 0.05f;
+                } else if (pair.second == 2) {
+                    if (speed == SPRINT_SPEED) camera_position_c += leftFaceDirection * SPRINT_SPEED * delta_t * 0.05f;
+                    else if (speed == NORMAL_SPEED) camera_position_c -= leftFaceDirection * NORMAL_SPEED * delta_t * 0.05f;
+                } else if (pair.second == 3) {
+                    if (speed == SPRINT_SPEED) camera_position_c += rightFaceDirection * SPRINT_SPEED * delta_t * 0.05f;
+                    else if (speed == NORMAL_SPEED) camera_position_c -= rightFaceDirection * NORMAL_SPEED * delta_t * 0.05f;
+                }
+            }
+        }
+
         for (const auto& creature : creatures) {
             glm::vec4 position = creature->GetPosition();
             float rotation_angle = creature->GetRotationAngle();
 
+            if (g_LeftMouseButtonPressed) {
+                if (inWeaponRange(weapon_position, weapon_direction, position, 7.0f, 30.0f)) {
+                    if (!creature->captured) {  // Inicia a captura se ainda não estiver capturada
+                        creature->captured = true;
+                        captureTime = 0.0f;  // Resetando o tempo de captura
+                    }
+
+                    captureTime += delta_t / 2.0f; // Ajuste a taxa de incremento de tempo
+                    captureTime = glm::clamp(captureTime, 0.0f, 1.0f); // Normaliza entre 0 e 1
+
+                    glm::vec3 start = glm::vec3(position);
+                    glm::vec3 end = glm::vec3(weapon_position);
+                    glm::vec3 newPosition = bezierSpiralPosition(start, end, captureTime, 10, GROUND_LEVEL);
+                    position = glm::vec4(newPosition, 1.0f);
+
+                    if (captureTime >= 1.0f) {
+                        captureTime = 0.0f;  // Resetando o tempo de captura
+                        position = glm::vec4(end, 1.0f); // Finaliza no centro da arma
+                    }
+
+                    lastPosition = position;  // Atualiza a posição final durante o movimento
+                } else {
+                    if (creature->captured) {
+                        creature->captured = false; // Finaliza a captura
+                        creature->setPosition(lastPosition);  // Define a posição final quando o botão é solto
+                    } 
+                }
+            } else {
+                // Se o botão do mouse foi solto e a criatura estava capturada
+                if (creature->captured) {
+                    creature->captured = false; // Finaliza a captura
+                    creature->setPosition(lastPosition);  // Define a posição final quando o botão é solto
+                    position = lastPosition;
+                }
+            }      
+  
             if (creature->GetType() == 0) { // Anemo
                 model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
                             * Matrix_Rotate_Y(rotation_angle) 
@@ -639,26 +776,6 @@ int main(int argc, char* argv[])
         glUniform1i(g_object_id_uniform, CUBE);
         glUniform2f(tilingLocation, 1.0f, 1.0f);
         DrawVirtualObject("cube");
-
-        // Desenhamos o modelo da arma
-        glm::vec4 weapon_position = camera_position_c + 0.4f * normalize(camera_view_vector) - 0.25f * normalize(crossproduct(camera_up_vector, camera_view_vector)) - 0.1f * camera_up_vector;
-        glm::vec4 weapon_direction = normalize(camera_view_vector);
-        glm::vec4 weapon_right = normalize(crossproduct(camera_up_vector, weapon_direction));
-        glm::vec4 weapon_up = normalize(crossproduct(weapon_direction, weapon_right));
-
-        glm::mat4 weapon_rotation = glm::mat4(weapon_right.x, weapon_right.y, weapon_right.z, 0.0f,
-                                              weapon_up.x, weapon_up.y, weapon_up.z, 0.0f,
-                                              weapon_direction.x, weapon_direction.y, weapon_direction.z, 0.0f,
-                                              0.0f, 0.0f, 0.0f, 1.0f);
-
-        model = Matrix_Translate(weapon_position.x, weapon_position.y, weapon_position.z)
-              * weapon_rotation
-              * Matrix_Scale(0.001f, 0.001f, 0.001f); 
-
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, WEAPON);
-        glUniform2f(tilingLocation, 1.0f, 1.0f);
-        DrawVirtualObject("weapon");
 
         // Imprimimos na tela informação sobre o número de quadros renderizados
         // por segundo (frames per second).
@@ -1309,7 +1426,6 @@ void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
         // g_LastCursorPosY.  Também, setamos a variável
         // g_RightMouseButtonPressed como true, para saber que o usuário está
         // com o botão esquerdo pressionado.
-        glfwGetCursorPos(window, &g_LastCursorPosX, &g_LastCursorPosY);
         g_RightMouseButtonPressed = true;
     }
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)

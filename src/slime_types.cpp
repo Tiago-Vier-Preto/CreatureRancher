@@ -6,14 +6,14 @@
 
 #include "slime_types.hpp"
 
-Anemo_Slime::Anemo_Slime(float x, float y, float z): Creature(x, y, z, 2.0f, 5.0f, -9.81f){
+Anemo_Slime::Anemo_Slime(float x, float y, float z): Creature(x, y, z, 8.0f, 0.2f, -7.81f){
 };
 
 int Anemo_Slime::GetType() const {
     return ANEMO;
 }
 
-Cryo_Slime::Cryo_Slime(float x, float y, float z) : Creature(x, y, z, 8.0f, 0.2f, -7.81f){
+Cryo_Slime::Cryo_Slime(float x, float y, float z) : Creature(x, y, z, 2.0f, 5.0f, -9.81f){
 };
 
 int Cryo_Slime::GetType() const {

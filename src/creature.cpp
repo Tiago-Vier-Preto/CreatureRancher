@@ -13,29 +13,31 @@ Creature::Creature(float x, float y, float z, float jump_velocity = 5.0f, float 
 }
 
 void Creature::Update(float delta_t) {
-    vertical_velocity += gravity * delta_t;
-    position.y += vertical_velocity * delta_t;
+    if (!this->captured){
+        vertical_velocity += gravity * delta_t;
+        position.y += vertical_velocity * delta_t;
 
-    if (position.y < GROUND_LEVEL) {
-        position.y = GROUND_LEVEL;
-        vertical_velocity = 0.0f;
-        is_jumping = false;
-    }
+        if (position.y < GROUND_LEVEL) {
+            position.y = GROUND_LEVEL;
+            vertical_velocity = 0.0f;
+            is_jumping = false;
+        }
 
-    if (!is_jumping && (rand() % 100) < this->jump_chance) { // chance de 1% de pular por frame
-        Jump();
-    }
+        if (!is_jumping && (rand() % 100) < this->jump_chance) { // chance de 1% de pular por frame
+            Jump();
+        }
 
-    if (is_jumping) {
-        position += direction * delta_t; // Move para frente na direção da rotação
-    }
+        if (is_jumping) {
+            position += direction * delta_t; // Move para frente na direção da rotação
+        }
 
-    // Interpolar suavemente o ângulo de rotação atual em direção ao ângulo de rotação alvo
-    float rotation_speed = glm::radians(90.0f) * delta_t; // Velocidade de rotação (ajuste conforme necessário)
-    if (glm::angle(glm::vec2(cos(rotation_angle), sin(rotation_angle)), glm::vec2(cos(target_rotation_angle), sin(target_rotation_angle))) > rotation_speed) {
-        rotation_angle += rotation_speed * (target_rotation_angle > rotation_angle ? 1.0f : -1.0f);
-    } else {
-        rotation_angle = target_rotation_angle;
+        // Interpolar suavemente o ângulo de rotação atual em direção ao ângulo de rotação alvo
+        float rotation_speed = glm::radians(90.0f) * delta_t; // Velocidade de rotação (ajuste conforme necessário)
+        if (glm::angle(glm::vec2(cos(rotation_angle), sin(rotation_angle)), glm::vec2(cos(target_rotation_angle), sin(target_rotation_angle))) > rotation_speed) {
+            rotation_angle += rotation_speed * (target_rotation_angle > rotation_angle ? 1.0f : -1.0f);
+        } else {
+            rotation_angle = target_rotation_angle;
+        }
     }
 }
 
@@ -54,4 +56,8 @@ glm::vec4 Creature::GetPosition() const {
 
 float Creature::GetRotationAngle() const {
     return rotation_angle;
+}
+
+void Creature::setPosition(glm::vec4 position) {
+    this->position = position;
 }
