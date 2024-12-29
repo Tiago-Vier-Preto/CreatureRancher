@@ -40,9 +40,9 @@
 #define window_width 1280
 #define window_height 720
 
-#define map_width 100.0f
-#define map_height 100.0f
-
+#define map_width 300.0f
+#define map_length 300.0f
+#define map_height 300.0f
 // Estrutura que representa um modelo geométrico carregado a partir de um
 // arquivo ".obj". Veja https://en.wikipedia.org/wiki/Wavefront_.obj_file .
 struct ObjModel
@@ -408,7 +408,7 @@ int main(int argc, char* argv[])
     
     float prev_time = (float)glfwGetTime();
 
-    std::vector<Creature*> creatures = SpawnCreatures(20, map_width, map_height); 
+    std::vector<Creature*> creatures = SpawnCreatures(20, map_width, map_length); 
     float captureTime = 0.0f;
     glm::vec4 lastPosition;
     float lastCaptureTime = 0.0f;
@@ -536,7 +536,7 @@ int main(int argc, char* argv[])
 
         // Desenhamos o plano do chão
         model = Matrix_Translate(0.0f,-1.1f,0.0f)
-              * Matrix_Scale(map_width, 1.0f, map_height);
+              * Matrix_Scale(map_width, 1.0f, map_length);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, PLANE);
         glUniform2f(tilingLocation, 10.0f, 10.0f);
@@ -563,7 +563,7 @@ int main(int argc, char* argv[])
         DrawVirtualObject("weapon");
 
         glm::vec3 cubeCenter = glm::vec3(0.0f, 0.0f, 0.0f);
-        glm::vec3 cubeSize = glm::vec3(100.0f, 100.0f, 100.0f);
+        glm::vec3 cubeSize = glm::vec3(map_width, map_height, map_length);
 
         AABB frontFace;
         frontFace.min = cubeCenter + glm::vec3(-cubeSize.x, -cubeSize.y, cubeSize.z);
@@ -771,7 +771,7 @@ int main(int argc, char* argv[])
 
         // Desenhamos o modelo do cubo
         model = Matrix_Translate(0.0f,0.0f,0.0f)
-                * Matrix_Scale(100.0f, 100.0f, 100.0f);
+                * Matrix_Scale(map_width, map_height, map_length);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, CUBE);
         glUniform2f(tilingLocation, 1.0f, 1.0f);
