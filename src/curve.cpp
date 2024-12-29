@@ -42,11 +42,12 @@ glm::vec3 bezierSpiralPosition(const glm::vec3& start, const glm::vec3& end, flo
         float height = i * heightStep;
 
         float radius = baseRadius * (1.0f - static_cast<float>(i) / (numSegments - 1)); // Redução do raio
-        glm::vec3 offset = radius * (cos(angle) * right + sin(angle) * up);
+        
+        glm::vec3 offset = radius * (static_cast<float>(cos(angle)) * right + static_cast<float>(sin(angle)) * up);
 
         // Adiciona deslocamento caótico (opcional)
         float oscillationStrength = radius * 0.3f;
-        glm::vec3 chaoticOffset = oscillationStrength * sin(i * glm::pi<float>() * 0.5f) * up;
+        glm::vec3 chaoticOffset = oscillationStrength * static_cast<float>(sin(i * glm::pi<float>() * 0.5f)) * up;
         offset += chaoticOffset;
 
         glm::vec3 point = start + height * direction + offset;
