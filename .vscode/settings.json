@@ -69,6 +69,16 @@
         "xutility": "cpp",
         "iostream": "cpp",
         "charconv": "cpp",
-        "format": "cpp"
+        "format": "cpp",
+        "*.tcc": "cpp",
+        "cwctype": "cpp",
+        "memory_resource": "cpp",
+        "numeric": "cpp",
+        "random": "cpp",
+        "string_view": "cpp",
+        "numbers": "cpp",
+        "text_encoding": "cpp",
+        "cinttypes": "cpp",
+        "variant": "cpp"
     }
 }

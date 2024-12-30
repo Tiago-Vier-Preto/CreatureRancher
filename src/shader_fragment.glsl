@@ -65,8 +65,15 @@ uniform sampler2D TextureImage17;  // Normal
 uniform sampler2D TextureImage18; // Opacity
 uniform sampler2D TextureImage19; // Roughness
 
-
-
+uniform sampler2D TextureImage20;
+uniform sampler2D TextureImage21;
+uniform sampler2D TextureImage22;
+uniform sampler2D TextureImage23;
+uniform sampler2D TextureImage24;
+uniform sampler2D TextureImage25;
+uniform sampler2D TextureImage26;
+uniform sampler2D TextureImage27;
+uniform sampler2D TextureImage28;
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
 
@@ -382,7 +389,144 @@ void main()
         color.rgb = finalColor;
         color.a = opacity; // Apply opacity
         color.rgb = pow(color.rgb, vec3(1.0, 1.0, 1.0) / 2.2); // Gamma correction
-    } else if (object_id == -1) 
+
+    } 
+    else if (object_id == 20) 
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(TextureImage20, vec2(U,V)).rgb;
+
+        float lambert = max(0,dot(n,l));
+
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == 21) 
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(TextureImage21, vec2(U,V)).rgb;
+
+        float lambert = max(0,dot(n,l));
+
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == 22) 
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(TextureImage22, vec2(U,V)).rgb;
+
+        float lambert = max(0,dot(n,l));
+
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == 23) 
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(TextureImage23, vec2(U,V)).rgb;
+
+        float lambert = max(0,dot(n,l));
+
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == 24) 
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(TextureImage24, vec2(U,V)).rgb;
+
+        float lambert = max(0,dot(n,l));
+
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == 25) 
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(TextureImage25, vec2(U,V)).rgb;
+
+        float lambert = max(0,dot(n,l));
+
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == 26) 
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(TextureImage26, vec2(U,V)).rgb;
+
+        float lambert = max(0,dot(n,l));
+
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == 27) 
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(TextureImage27, vec2(U,V)).rgb;
+
+        float lambert = max(0,dot(n,l));
+
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == 28) 
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(TextureImage28, vec2(U,V)).rgb;
+
+        float lambert = max(0,dot(n,l));
+
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == -1) 
     {
         color.rgb = vec3(1.0, 0.0, 0.0);
         

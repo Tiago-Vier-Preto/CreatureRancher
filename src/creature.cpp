@@ -11,7 +11,6 @@ const float Creature::MIN_DISTANCE = 5.0f; // Distância mínima entre as criatu
 Creature::Creature(float x, float y, float z, float jump_velocity = 5.0f, float jump_chance = 0.5f, float gravity = -9.81f) : 
 position(x, y, z, 1.0f), vertical_velocity(0.0f), is_jumping(false), rotation_angle(0.0f), target_rotation_angle(0.0f), 
 jump_velocity(jump_velocity), jump_chance(jump_chance), gravity(gravity){
-    srand(static_cast<unsigned int>(time(0)));
 }
 
 void Creature::Update(float delta_t) {

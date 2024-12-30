@@ -267,6 +267,7 @@ int main(int argc, char* argv[])
 
     // Criamos uma janela do sistema operacional, com 800 colunas e 600 linhas
     // de pixels, e com título "INF01047 ...".
+    srand(time(0));
     GLFWwindow* window;
     window = glfwCreateWindow(window_width, window_height, "Creature Rancher", NULL, NULL);
     if (!window)
@@ -310,7 +311,7 @@ int main(int argc, char* argv[])
     // Carregamos duas imagens para serem utilizadas como textura
     LoadTextureImage("../../data/tc-earth_daymap_surface.jpg");      // TextureImage0
     LoadTextureImage("../../data/tc-earth_nightmap_citylights.gif"); // TextureImage1
-    LoadTextureImage("../../data/aerial_grass_rock/textures/aerial_grass_rock_diff_4k.jpg"); // TextureImage2
+    LoadTextureImage("../../data/planes/base.jpg"); // TextureImage2
     
     LoadTextureImage("../../data/anemo-slime/textures/bake.png"); // TextureImage3
     LoadTextureImage("../../data/cryo-slime/textures/bake.png"); // TextureImage4
@@ -335,14 +336,25 @@ int main(int argc, char* argv[])
     stbi_set_flip_vertically_on_load(true);
 
     // Texturas da arma
-    LoadTextureImage("../../data/weapon/textures/AOMaterial.png"); // TextureImage11
-    LoadTextureImage("../../data/weapon/textures/BASECOLOR_Material.png"); // TextureImage12
-    LoadTextureImage("../../data/weapon/textures/CURVATUREMaterial.png"); // TextureImage13
-    LoadTextureImage("../../data/weapon/textures/EMISSIVE_Material.png"); // TextureImage14
-    LoadTextureImage("../../data/weapon/textures/METALLICMaterial.png"); // TextureImage15
-    LoadTextureImage("../../data/weapon/textures/NORMAL_Material.png"); // TextureImage16
-    LoadTextureImage("../../data/weapon/textures/OPACITYMaterial.png"); // TextureImage17
-    LoadTextureImage("../../data/weapon/textures/ROUGHNESS.png"); // TextureImage18
+    LoadTextureImage("../../data/weapon/textures/AOMaterial.png"); // TextureImage12
+    LoadTextureImage("../../data/weapon/textures/BASECOLOR_Material.png"); // TextureImage13
+    LoadTextureImage("../../data/weapon/textures/CURVATUREMaterial.png"); // TextureImage14
+    LoadTextureImage("../../data/weapon/textures/EMISSIVE_Material.png"); // TextureImage15
+    LoadTextureImage("../../data/weapon/textures/METALLICMaterial.png"); // TextureImage16
+    LoadTextureImage("../../data/weapon/textures/NORMAL_Material.png"); // TextureImage17
+    LoadTextureImage("../../data/weapon/textures/OPACITYMaterial.png"); // TextureImage18
+    LoadTextureImage("../../data/weapon/textures/ROUGHNESS.png"); // TextureImage19
+
+    //Texturas de Terrenos
+    LoadTextureImage("../../data/planes/cloud.jpg"); // TextureImage20
+    LoadTextureImage("../../data/planes/snow_land.jpg"); // TextureImage21
+    LoadTextureImage("../../data/planes/wood_forest.jpg"); // TextureImage22
+    LoadTextureImage("../../data/planes/electric_fields.jpg"); // TextureImage23
+    LoadTextureImage("../../data/planes/base.jpg"); // TextureImage24
+    LoadTextureImage("../../data/planes/burnt_land.jpg"); // TextureImage25
+    LoadTextureImage("../../data/planes/rocky_ground.jpg"); // TextureImage26
+    LoadTextureImage("../../data/planes/factory.jpg"); // TextureImage27
+    LoadTextureImage("../../data/planes/watery_mud.jpg"); // TextureImage28
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel planemodel("../../data/plane.obj");
@@ -408,7 +420,7 @@ int main(int argc, char* argv[])
     
     float prev_time = (float)glfwGetTime();
 
-    std::vector<Creature*> creatures = SpawnCreatures(20, map_width, map_length); 
+    std::vector<Creature*> creatures = SpawnCreatures(50, map_width, map_length); 
     float captureTime = 0.0f;
     glm::vec4 lastPosition;
     float lastCaptureTime = 0.0f;
@@ -529,20 +541,22 @@ int main(int argc, char* argv[])
         glUniformMatrix4fv(g_view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
         glUniformMatrix4fv(g_projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
 
-        #define PLANE    2
+        #define BASE_PLANE    2
         #define CREATURE 3
         #define CUBE     11
         #define WEAPON   12
-
+        #define PRIMEIRO_PLANO 20
         // Desenhamos o plano do chão
-        model = Matrix_Translate(0.0f,-1.1f,0.0f)
-              * Matrix_Scale(map_width, 1.0f, map_length);
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, PLANE);
-        glUniform2f(tilingLocation, 10.0f, 10.0f);
-        DrawVirtualObject("the_plane");
+        for(int i = 0; i < 9; i++)
+        {
+            model = Matrix_Translate(-200.0f + 200 * (i % 3),-1.1f,-200.0f + 200 * (i / 3))
+                * Matrix_Scale(100, 1.0f, 100);
+            glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+            glUniform1i(g_object_id_uniform, 20 + i);
+            glUniform2f(tilingLocation, 10.0f, 10.0f);
+            DrawVirtualObject("the_plane");
+        }
 
-        // Desenhamos o modelo da arma
         glm::vec4 weapon_position = camera_position_c + 0.4f * normalize(camera_view_vector) - 0.25f * normalize(crossproduct(camera_up_vector, camera_view_vector)) - 0.1f * camera_up_vector;
         glm::vec4 weapon_direction = normalize(camera_view_vector);
         glm::vec4 weapon_right = normalize(crossproduct(camera_up_vector, weapon_direction));
@@ -990,10 +1004,17 @@ void LoadShadersFromFiles()
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage16"), 16);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage17"), 17);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage18"), 18);
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage19"), 19);
 
-    
-    
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage19"), 19);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage20"), 20);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage21"), 21);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage22"), 22);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage23"), 23);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage24"), 24);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage25"), 25);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage26"), 26);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage27"), 27);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage28"), 28);
 
     glUseProgram(0);
 }

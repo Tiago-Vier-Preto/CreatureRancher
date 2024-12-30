@@ -1882,15 +1882,11 @@ CMakeFiles/main.dir/src/slime_types.cpp.obj: C:/Users/augus/Desktop/CreatureRanc
   C:/msys64/ucrt64/include/c++/14.1.0/bits/concept_check.h \
   C:/msys64/ucrt64/include/c++/14.1.0/bits/cpp_type_traits.h \
   C:/msys64/ucrt64/include/c++/14.1.0/bits/cxxabi_forced.h \
-  C:/msys64/ucrt64/include/c++/14.1.0/bits/enable_special_members.h \
-  C:/msys64/ucrt64/include/c++/14.1.0/bits/erase_if.h \
   C:/msys64/ucrt64/include/c++/14.1.0/bits/exception.h \
   C:/msys64/ucrt64/include/c++/14.1.0/bits/exception_defines.h \
   C:/msys64/ucrt64/include/c++/14.1.0/bits/functexcept.h \
   C:/msys64/ucrt64/include/c++/14.1.0/bits/functional_hash.h \
   C:/msys64/ucrt64/include/c++/14.1.0/bits/hash_bytes.h \
-  C:/msys64/ucrt64/include/c++/14.1.0/bits/hashtable.h \
-  C:/msys64/ucrt64/include/c++/14.1.0/bits/hashtable_policy.h \
   C:/msys64/ucrt64/include/c++/14.1.0/bits/invoke.h \
   C:/msys64/ucrt64/include/c++/14.1.0/bits/localefwd.h \
   C:/msys64/ucrt64/include/c++/14.1.0/bits/memoryfwd.h \
@@ -1915,8 +1911,6 @@ CMakeFiles/main.dir/src/slime_types.cpp.obj: C:/Users/augus/Desktop/CreatureRanc
   C:/msys64/ucrt64/include/c++/14.1.0/bits/stl_uninitialized.h \
   C:/msys64/ucrt64/include/c++/14.1.0/bits/stl_vector.h \
   C:/msys64/ucrt64/include/c++/14.1.0/bits/stringfwd.h \
-  C:/msys64/ucrt64/include/c++/14.1.0/bits/unordered_map.h \
-  C:/msys64/ucrt64/include/c++/14.1.0/bits/uses_allocator.h \
   C:/msys64/ucrt64/include/c++/14.1.0/bits/utility.h \
   C:/msys64/ucrt64/include/c++/14.1.0/bits/vector.tcc \
   C:/msys64/ucrt64/include/c++/14.1.0/bits/version.h \
@@ -1935,7 +1929,6 @@ CMakeFiles/main.dir/src/slime_types.cpp.obj: C:/Users/augus/Desktop/CreatureRanc
   C:/msys64/ucrt64/include/c++/14.1.0/cwchar \
   C:/msys64/ucrt64/include/c++/14.1.0/debug/assertions.h \
   C:/msys64/ucrt64/include/c++/14.1.0/debug/debug.h \
-  C:/msys64/ucrt64/include/c++/14.1.0/ext/aligned_buffer.h \
   C:/msys64/ucrt64/include/c++/14.1.0/ext/alloc_traits.h \
   C:/msys64/ucrt64/include/c++/14.1.0/ext/numeric_traits.h \
   C:/msys64/ucrt64/include/c++/14.1.0/ext/string_conversions.h \
@@ -1946,9 +1939,7 @@ CMakeFiles/main.dir/src/slime_types.cpp.obj: C:/Users/augus/Desktop/CreatureRanc
   C:/msys64/ucrt64/include/c++/14.1.0/new \
   C:/msys64/ucrt64/include/c++/14.1.0/stdlib.h \
   C:/msys64/ucrt64/include/c++/14.1.0/string \
-  C:/msys64/ucrt64/include/c++/14.1.0/tuple \
   C:/msys64/ucrt64/include/c++/14.1.0/type_traits \
-  C:/msys64/ucrt64/include/c++/14.1.0/unordered_map \
   C:/msys64/ucrt64/include/c++/14.1.0/vector \
   C:/msys64/ucrt64/include/c++/14.1.0/x86_64-w64-mingw32/bits/c++allocator.h \
   C:/msys64/ucrt64/include/c++/14.1.0/x86_64-w64-mingw32/bits/c++config.h \
@@ -2634,12 +2625,6 @@ C:/Users/augus/Desktop/CreatureRancher/src/textrendering.cpp:
 
 C:/msys64/ucrt64/include/c++/14.1.0/math.h:
 
-C:/msys64/ucrt64/include/c++/14.1.0/bits/unordered_map.h:
-
-C:/msys64/ucrt64/include/c++/14.1.0/bits/hashtable.h:
-
-C:/msys64/ucrt64/include/c++/14.1.0/bits/enable_special_members.h:
-
 C:/Users/augus/Desktop/CreatureRancher/src/slime_types.cpp:
 
 C:/msys64/ucrt64/include/c++/14.1.0/x86_64-w64-mingw32/bits/c++io.h:
@@ -2689,8 +2674,6 @@ C:/msys64/ucrt64/include/time.h:
 C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.1.0/include/uintrintrin.h:
 
 C:/msys64/ucrt64/include/c++/14.1.0/x86_64-w64-mingw32/bits/os_defines.h:
-
-C:/msys64/ucrt64/include/c++/14.1.0/unordered_map:
 
 C:/Users/augus/Desktop/CreatureRancher/include/glm/ext/matrix_double4x4_precision.hpp:
 
@@ -2769,8 +2752,6 @@ C:/Users/augus/Desktop/CreatureRancher/include/glm/ext/vector_float3_precision.h
 C:/msys64/ucrt64/include/pshpack1.h:
 
 C:/msys64/ucrt64/include/malloc.h:
-
-C:/msys64/ucrt64/include/c++/14.1.0/bits/hashtable_policy.h:
 
 C:/msys64/ucrt64/include/c++/14.1.0/ext/string_conversions.h:
 

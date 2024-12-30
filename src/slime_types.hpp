@@ -52,6 +52,6 @@ class Water_Slime: public Creature {
         int GetType() const override;
 };
 
-std::vector<Creature*> SpawnCreatures(int count, float map_width, float map_height);
+std::vector<Creature*> SpawnCreatures(int count, float map_width, float map_length);
 
 #endif
