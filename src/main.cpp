@@ -421,7 +421,8 @@ int main(int argc, char* argv[])
     
     float prev_time = (float)glfwGetTime();
 
-    std::vector<Creature*> creatures = InitialCreatureSpawn(100, map_width, map_length); 
+    std::vector<Creature*> creatures = InitialCreatureSpawn(STARTING_SLIMES, map_width, map_length);
+    int slime_count = STARTING_SLIMES;
     float captureTime = 0.0f;
     glm::vec4 lastPosition;
     float lastCaptureTime = 0.0f;
@@ -482,12 +483,13 @@ int main(int argc, char* argv[])
         for (auto& creature : creatures) {
             creature->Update(delta_t);
         }
-        if (slime_spawn_timer >= SLIME_SPAWN_TIME && creatures.size() < SLIME_LIMIT) {
+        if (slime_spawn_timer >= SLIME_SPAWN_TIME && slime_count < SLIME_LIMIT) {
             // Reset the spawn timer
             slime_spawn_timer = 0.0f;
 
             // Spawn a new slime and add it to the creatures vector
             Creature* new_slime = SpawnCreature(map_width, map_length, creatures); // Adjust SpawnCreature parameters as needed
+            slime_count++;
             creatures.push_back(new_slime);
         }
 
