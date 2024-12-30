@@ -43,6 +43,7 @@
 #define map_width 300.0f
 #define map_length 300.0f
 #define map_height 300.0f
+
 // Estrutura que representa um modelo geométrico carregado a partir de um
 // arquivo ".obj". Veja https://en.wikipedia.org/wiki/Wavefront_.obj_file .
 struct ObjModel
@@ -420,14 +421,14 @@ int main(int argc, char* argv[])
     
     float prev_time = (float)glfwGetTime();
 
-    std::vector<Creature*> creatures = SpawnCreatures(50, map_width, map_length); 
+    std::vector<Creature*> creatures = InitialCreatureSpawn(100, map_width, map_length); 
     float captureTime = 0.0f;
     glm::vec4 lastPosition;
     float lastCaptureTime = 0.0f;
 
     std::vector<std::pair<int, int>> potentialCollisions;
-
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
+    static float slime_spawn_timer = 0.0f;
     while (!glfwWindowShouldClose(window))
     {
         // Aqui executamos as operações de renderização
@@ -473,12 +474,21 @@ int main(int argc, char* argv[])
 
         float current_time = (float)glfwGetTime();
         float delta_t = current_time - prev_time;
+        slime_spawn_timer += delta_t;
         prev_time = current_time;
 
         float speed = g_IsSprinting ? SPRINT_SPEED : NORMAL_SPEED;
 
         for (auto& creature : creatures) {
             creature->Update(delta_t);
+        }
+        if (slime_spawn_timer >= SLIME_SPAWN_TIME && creatures.size() < SLIME_LIMIT) {
+            // Reset the spawn timer
+            slime_spawn_timer = 0.0f;
+
+            // Spawn a new slime and add it to the creatures vector
+            Creature* new_slime = SpawnCreature(map_width, map_length, creatures); // Adjust SpawnCreature parameters as needed
+            creatures.push_back(new_slime);
         }
 
         g_CameraVerticalVelocity += GRAVITY * delta_t;

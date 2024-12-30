@@ -60,7 +60,7 @@ int Water_Slime::GetType() const {
     return WATER;
 }
 
-std::vector<Creature*> SpawnCreatures(int count, float map_width, float map_length) 
+std::vector<Creature*> InitialCreatureSpawn(int count, float map_width, float map_length) 
 {
     std::vector<Creature*> creatures;
     Creature* new_creature;
@@ -74,7 +74,6 @@ std::vector<Creature*> SpawnCreatures(int count, float map_width, float map_leng
     for (int i = 0; i < count; i++) 
     {
         type = Slime_Type(rand() % (TILE_COUNT - 1));
-        printf("%d", int(type));
         valid_position = false;
         switch (type) 
         {
@@ -156,3 +155,88 @@ std::vector<Creature*> SpawnCreatures(int count, float map_width, float map_leng
     return creatures;
 }
 
+Creature* SpawnCreature(float map_width, float map_length, std::vector<Creature*> creatures) 
+{
+    Creature* creature;
+    Slime_Type type;
+    bool valid_position;
+    int tile;
+    float x, z;
+    float distance;
+    constexpr int TILE_COUNT = 9;
+
+    type = Slime_Type(rand() % (TILE_COUNT - 1));
+    valid_position = false;
+    switch (type) 
+    {
+        case ANEMO:
+            tile = 0;
+            break;
+        case CRYO:
+            tile = 1;
+            break;
+        case DENDRO:
+            tile = 2;
+            break;
+        case ELECTRO:
+            tile = 3;
+            break;
+        case FIRE:
+            tile = 5;
+            break;
+        case GEO:
+            tile = 6;
+            break;
+        case MUTATED_ELECTRO:
+            tile = 7;
+            break;
+        case WATER:
+            tile = 8;
+            break;
+    }
+    while (!valid_position) 
+    {
+        x = -280 + (200 * (tile % 3)) + (static_cast<float>(rand()) / RAND_MAX) * 180;
+        z = -280 + (200 * (tile / 3)) + (static_cast<float>(rand()) / RAND_MAX) * 180;
+        for (const auto& creature : creatures) 
+        {
+            distance = glm::distance(glm::vec2(x, z), glm::vec2(creature->GetPosition().x, creature->GetPosition().z));
+            if (distance < Creature::MIN_DISTANCE) 
+            {
+                valid_position = false;
+                break;
+            }
+        } 
+        valid_position = true;
+    }
+
+    creature = nullptr;
+    switch (type) 
+    {
+        case ANEMO:
+            creature = new Anemo_Slime(x, Creature::GROUND_LEVEL, z);
+            break;
+        case CRYO:
+            creature = new Cryo_Slime(x, Creature::GROUND_LEVEL, z);
+            break;
+        case DENDRO:
+            creature = new Dendro_Slime(x, Creature::GROUND_LEVEL, z);
+            break;
+        case ELECTRO:
+            creature = new Electro_Slime(x, Creature::GROUND_LEVEL, z);
+            break;
+        case FIRE:
+            creature = new Fire_Slime(x, Creature::GROUND_LEVEL, z);
+            break;
+        case GEO:
+            creature = new Geo_Slime(x, Creature::GROUND_LEVEL, z);
+            break;
+        case MUTATED_ELECTRO:
+            creature = new Mutated_Electro_Slime(x, Creature::GROUND_LEVEL, z);
+            break;
+        case WATER:
+            creature = new Water_Slime(x, Creature::GROUND_LEVEL, z);
+            break;
+    }
+    return creature;
+}
