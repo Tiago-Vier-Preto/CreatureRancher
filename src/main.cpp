@@ -353,6 +353,17 @@ int main(int argc, char* argv[])
         ma_engine_uninit(&engine);
         return -1;
     }
+
+    // Load Jump sound effect
+    const char* suction_file_path = "../../data/sfx/suction.wav";
+    ma_sound suction_sound;
+    result_sfx = ma_sound_init_from_file(&engine, suction_file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &suction_sound);
+    if (result_sfx != MA_SUCCESS)
+    {
+        printf("Failed to load jump sound: %d\n", result_sfx);
+        ma_engine_uninit(&engine);
+        return -1;
+    }
     // Definimos a função de callback que será chamada sempre que o usuário
     // pressionar alguma tecla do teclado ...
     glfwSetKeyCallback(window, KeyCallback);
@@ -637,7 +648,6 @@ int main(int argc, char* argv[])
         if (playerMoved && !g_IsJumping) {
             ma_sound_set_volume(&step_sound, g_IsSprinting ? 1.0f : 0.8f);
             ma_sound_set_pitch(&step_sound, g_IsSprinting ? 1.2f : 1.0f); // Increase pitch when sprinting
-
             ma_sound_start(&step_sound);
         }
         if (g_Player_Started_Jumping) {
@@ -799,7 +809,8 @@ int main(int argc, char* argv[])
             glm::vec4 position = creature->GetPosition();
             float rotation_angle = creature->GetRotationAngle();
 
-            if (g_LeftMouseButtonPressed) {
+            if (g_RightMouseButtonPressed) {
+                ma_sound_start(&suction_sound);
                 if (inWeaponRange(weapon_position, weapon_direction, position, 7.0f, 30.0f)) {
                     if (!creature->captured) {  // Inicia a captura se ainda não estiver capturada
                         creature->captured = true;
