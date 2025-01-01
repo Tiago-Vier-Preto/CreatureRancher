@@ -1437,6 +1437,7 @@ CMakeFiles/main.dir/src/main.cpp.obj: C:/Users/augus/Desktop/CreatureRancher/src
   C:/msys64/ucrt64/include/c++/14.1.0/istream \
   C:/msys64/ucrt64/include/c++/14.1.0/limits \
   C:/msys64/ucrt64/include/c++/14.1.0/map \
+  C:/msys64/ucrt64/include/c++/14.1.0/math.h \
   C:/msys64/ucrt64/include/c++/14.1.0/new \
   C:/msys64/ucrt64/include/c++/14.1.0/ostream \
   C:/msys64/ucrt64/include/c++/14.1.0/sstream \
@@ -1485,6 +1486,7 @@ CMakeFiles/main.dir/src/main.cpp.obj: C:/Users/augus/Desktop/CreatureRancher/src
   C:/msys64/ucrt64/include/heapapi.h \
   C:/msys64/ucrt64/include/imm.h \
   C:/msys64/ucrt64/include/interlockedapi.h \
+  C:/msys64/ucrt64/include/io.h \
   C:/msys64/ucrt64/include/ioapiset.h \
   C:/msys64/ucrt64/include/jobapi.h \
   C:/msys64/ucrt64/include/ktmtypes.h \
@@ -1538,8 +1540,10 @@ CMakeFiles/main.dir/src/main.cpp.obj: C:/Users/augus/Desktop/CreatureRancher/src
   C:/msys64/ucrt64/include/stralign.h \
   C:/msys64/ucrt64/include/string.h \
   C:/msys64/ucrt64/include/stringapiset.h \
+  C:/msys64/ucrt64/include/strings.h \
   C:/msys64/ucrt64/include/swprintf.inl \
   C:/msys64/ucrt64/include/synchapi.h \
+  C:/msys64/ucrt64/include/sys/stat.h \
   C:/msys64/ucrt64/include/sys/timeb.h \
   C:/msys64/ucrt64/include/sys/types.h \
   C:/msys64/ucrt64/include/sysinfoapi.h \
@@ -1684,6 +1688,7 @@ CMakeFiles/main.dir/src/main.cpp.obj: C:/Users/augus/Desktop/CreatureRancher/src
   C:/Users/augus/Desktop/CreatureRancher/src/collisions.hpp \
   C:/Users/augus/Desktop/CreatureRancher/src/creature.hpp \
   C:/Users/augus/Desktop/CreatureRancher/src/curve.hpp \
+  C:/Users/augus/Desktop/CreatureRancher/src/miniaudio.h \
   C:/Users/augus/Desktop/CreatureRancher/src/slime_types.hpp
 
 CMakeFiles/main.dir/src/slime_types.cpp.obj: C:/Users/augus/Desktop/CreatureRancher/src/slime_types.cpp \
@@ -2623,9 +2628,11 @@ C:/Users/augus/Desktop/CreatureRancher/include/dejavufont.h:
 
 C:/Users/augus/Desktop/CreatureRancher/src/textrendering.cpp:
 
-C:/msys64/ucrt64/include/c++/14.1.0/math.h:
-
 C:/Users/augus/Desktop/CreatureRancher/src/slime_types.cpp:
+
+C:/msys64/ucrt64/include/sys/stat.h:
+
+C:/msys64/ucrt64/include/io.h:
 
 C:/msys64/ucrt64/include/c++/14.1.0/x86_64-w64-mingw32/bits/c++io.h:
 
@@ -2634,6 +2641,8 @@ C:/msys64/ucrt64/include/c++/14.1.0/x86_64-w64-mingw32/bits/basic_file.h:
 C:/msys64/ucrt64/include/c++/14.1.0/tuple:
 
 C:/msys64/ucrt64/include/c++/14.1.0/stack:
+
+C:/msys64/ucrt64/include/c++/14.1.0/math.h:
 
 C:/msys64/ucrt64/include/c++/14.1.0/bits/uses_allocator.h:
 
@@ -2945,6 +2954,8 @@ C:/Users/augus/Desktop/CreatureRancher/include/glm/ext/matrix_double2x4.hpp:
 
 C:/Users/augus/Desktop/CreatureRancher/include/glm/detail/type_mat3x2.hpp:
 
+C:/msys64/ucrt64/include/strings.h:
+
 C:/msys64/ucrt64/include/c++/14.1.0/deque:
 
 C:/Users/augus/Desktop/CreatureRancher/include/glm/ext/matrix_double4x2.hpp:
@@ -3078,6 +3089,8 @@ C:/Users/augus/Desktop/CreatureRancher/include/glm/detail/type_mat3x3.inl:
 C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.1.0/include/shaintrin.h:
 
 C:/Users/augus/Desktop/CreatureRancher/include/glm/ext/matrix_float3x2.hpp:
+
+C:/Users/augus/Desktop/CreatureRancher/src/miniaudio.h:
 
 C:/Users/augus/Desktop/CreatureRancher/include/glm/detail/type_mat3x4.hpp:
 

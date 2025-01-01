@@ -37,6 +37,9 @@
 #include "curve.hpp"
 #include "collisions.hpp"
 
+#define MINIAUDIO_IMPLEMENTATION
+#include "miniaudio.h"
+
 #define window_width 1280
 #define window_height 720
 
@@ -145,6 +148,7 @@ void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 void CursorPosCallback(GLFWwindow* window, double xpos, double ypos);
 void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
+void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount);
 // Definimos uma estrutura que armazenará dados necessários para renderizar
 // cada objeto da cena virtual.
 struct SceneObject
@@ -234,6 +238,7 @@ const float GROUND_LEVEL = 0.0f;
 float g_CameraVerticalVelocity = 0.0f;
 
 bool g_IsJumping = false;
+bool g_Player_Started_Jumping = false;
 const float JUMP_VELOCITY = 5.0f; // Initial velocity for the jump
 
 bool g_IsSprinting = false;
@@ -278,6 +283,76 @@ int main(int argc, char* argv[])
         std::exit(EXIT_FAILURE);
     }
 
+    ma_result result;
+    ma_device_config deviceConfig;
+    ma_device device;
+    ma_decoder decoder;
+
+    // Construct the path to the music file
+    const char* filePath = "../../data/music/game.wav"; // Relative path from src directory
+    result = ma_decoder_init_file(filePath, NULL, &decoder);
+    if (result != MA_SUCCESS) {
+        printf("Failed to load music file: %s\n", filePath);
+        return -1;
+    }
+
+    // Configure playback device
+    deviceConfig = ma_device_config_init(ma_device_type_playback);
+    deviceConfig.playback.format   = decoder.outputFormat;
+    deviceConfig.playback.channels = decoder.outputChannels;
+    deviceConfig.sampleRate        = decoder.outputSampleRate;
+    deviceConfig.dataCallback      = data_callback;
+    deviceConfig.pUserData         = &decoder;
+
+    // Initialize the playback device
+    result = ma_device_init(NULL, &deviceConfig, &device);
+    if (result != MA_SUCCESS) {
+        printf("Failed to initialize playback device.\n");
+        ma_decoder_uninit(&decoder);
+        return -1;
+    }
+
+    //SFX
+    ma_engine engine;
+    ma_result result_sfx = ma_engine_init(NULL, &engine);
+    if (result_sfx != MA_SUCCESS)
+    {
+        printf("Failed to initialize audio engine.\n");
+        return -1;
+    }
+
+    //Load Slime Jump sound effect
+    const char* slime_jump_file_path = "../../data/sfx/slime_jump.wav";
+    ma_sound slime_jump_sound;
+    result_sfx = ma_sound_init_from_file(&engine, slime_jump_file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &slime_jump_sound);
+    if (result_sfx != MA_SUCCESS)
+    {
+        printf("Failed to load jump sound: %d\n", result_sfx);
+        ma_engine_uninit(&engine);
+        return -1;
+    }
+
+    // Load Step sound effect
+    const char* step_file_path = "../../data/sfx/step.wav";
+    ma_sound step_sound;
+    result_sfx = ma_sound_init_from_file(&engine, step_file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &step_sound);
+    if (result_sfx != MA_SUCCESS)
+    {
+        printf("Failed to load step sound: %d\n", result_sfx);
+        ma_engine_uninit(&engine);
+        return -1;
+    }
+
+    // Load Jump sound effect
+    const char* jump_file_path = "../../data/sfx/jump.wav";
+    ma_sound jump_sound;
+    result_sfx = ma_sound_init_from_file(&engine, jump_file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &jump_sound);
+    if (result_sfx != MA_SUCCESS)
+    {
+        printf("Failed to load jump sound: %d\n", result_sfx);
+        ma_engine_uninit(&engine);
+        return -1;
+    }
     // Definimos a função de callback que será chamada sempre que o usuário
     // pressionar alguma tecla do teclado ...
     glfwSetKeyCallback(window, KeyCallback);
@@ -430,6 +505,15 @@ int main(int argc, char* argv[])
     std::vector<std::pair<int, int>> potentialCollisions;
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     static float slime_spawn_timer = 0.0f;
+    // Start playback
+    result = ma_device_start(&device);
+    if (result != MA_SUCCESS) {
+        printf("Failed to start playback device.\n");
+        ma_device_uninit(&device);
+        ma_decoder_uninit(&decoder);
+        return -1;
+    }
+
     while (!glfwWindowShouldClose(window))
     {
         // Aqui executamos as operações de renderização
@@ -480,8 +564,35 @@ int main(int argc, char* argv[])
 
         float speed = g_IsSprinting ? SPRINT_SPEED : NORMAL_SPEED;
 
+        bool started_jumping;
+        // Initialize variables to track the loudest jump
+        float maxVolume = 0.0f;
+        Creature* loudestCreature = nullptr;
+
+        // Loop through all creatures to update and find the loudest jump
         for (auto& creature : creatures) {
-            creature->Update(delta_t);
+            bool started_jumping = creature->Update(delta_t);
+            if (started_jumping) {
+                glm::vec3 playerPos = glm::vec3(camera_position_c);
+                glm::vec3 slimePos = glm::vec3(creature->GetPosition());
+                float distance = glm::distance(playerPos, slimePos);
+
+                // Normalize distance to volume
+                float maxDistance = 50.0f; // Maximum distance to hear sound
+                float volume = 1.0f - glm::clamp(distance / maxDistance, 0.0f, 1.0f);
+
+                // Track the loudest jump
+                if (volume > maxVolume) {
+                    maxVolume = volume;
+                    loudestCreature = creature;
+                }
+            }
+        }
+
+        // Play the sound for the loudest jump if any
+        if (loudestCreature != nullptr) {
+            ma_sound_set_volume(&slime_jump_sound, maxVolume);
+            ma_sound_start(&slime_jump_sound);
         }
         if (slime_spawn_timer >= SLIME_SPAWN_TIME && slime_count < SLIME_LIMIT) {
             // Reset the spawn timer
@@ -504,13 +615,35 @@ int main(int argc, char* argv[])
         }
 
         // Atualizamos a posição da câmera utilizando as teclas W, A, S, D
-        if (g_WkeyPressed) camera_position_c += -w_vector * speed * delta_t;
-        
-        if (g_SkeyPressed) camera_position_c +=  w_vector * speed * delta_t;
+        bool playerMoved = false;
+        if (g_WkeyPressed) {
+            camera_position_c += -w_vector * speed * delta_t;
+            playerMoved = true;
+        }
+        if (g_SkeyPressed) {
+            camera_position_c += w_vector * speed * delta_t;
+            playerMoved = true;
+        }
+        if (g_AkeyPressed) {
+            camera_position_c += -u_vector * speed * delta_t;
+            playerMoved = true;
+        }
+        if (g_DkeyPressed) {
+            camera_position_c += u_vector * speed * delta_t;
+            playerMoved = true;
+        }
 
-        if (g_AkeyPressed) camera_position_c += -u_vector * speed * delta_t;
+        // Play Step sound if the player moved
+        if (playerMoved && !g_IsJumping) {
+            ma_sound_set_volume(&step_sound, g_IsSprinting ? 1.0f : 0.8f);
+            ma_sound_set_pitch(&step_sound, g_IsSprinting ? 1.2f : 1.0f); // Increase pitch when sprinting
 
-        if (g_DkeyPressed) camera_position_c +=  u_vector * speed * delta_t;
+            ma_sound_start(&step_sound);
+        }
+        if (g_Player_Started_Jumping) {
+            ma_sound_start(&jump_sound);
+            g_Player_Started_Jumping = false;
+        }
         
         // Computamos a matriz "View" utilizando os parâmetros da câmera para
         // definir o sistema de coordenadas da câmera.  Veja slides 2-14, 184-190 e 236-242 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
@@ -821,7 +954,12 @@ int main(int argc, char* argv[])
         // pela biblioteca GLFW.
         glfwPollEvents();
     }
-
+    ma_device_uninit(&device);
+    ma_decoder_uninit(&decoder);
+    ma_sound_uninit(&slime_jump_sound);
+    ma_sound_uninit(&step_sound);
+    ma_sound_uninit(&jump_sound);
+    ma_engine_uninit(&engine);
     // Finalizamos o uso dos recursos do sistema operacional
     glfwTerminate();
 
@@ -1583,6 +1721,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     {
         g_IsJumping = true;
         g_CameraVerticalVelocity = JUMP_VELOCITY;
+        g_Player_Started_Jumping = true;
     }
 
     // Se o usuário apertar a tecla R, recarregamos os shaders dos arquivos "shader_fragment.glsl" e "shader_vertex.glsl".
@@ -1808,3 +1947,30 @@ void PrintObjModelInfo(ObjModel* model)
 // set makeprg=cd\ ..\ &&\ make\ run\ >/dev/null
 // vim: set spell spelllang=pt_br :
 
+void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
+    ma_decoder* pDecoder = (ma_decoder*)pDevice->pUserData;
+    if (pDecoder == NULL) {
+        return;
+    }
+
+    ma_uint64 framesRead;
+    ma_decoder_read_pcm_frames(pDecoder, pOutput, frameCount, &framesRead);
+
+    // Looping logic: If fewer frames are read, loop the audio
+    if (framesRead < frameCount) {
+        size_t bytesPerFrame = ma_get_bytes_per_frame(pDevice->playback.format, pDevice->playback.channels);
+
+        // Fill the remaining frames by looping
+        ma_uint64 remainingFrames = frameCount - framesRead;
+        memset((char*)pOutput + framesRead * bytesPerFrame, 0, remainingFrames * bytesPerFrame); // Zero out remainder
+
+        // Reset decoder and read from the beginning
+        ma_decoder_seek_to_pcm_frame(pDecoder, 0);
+
+        // Read the remaining frames after resetting
+        ma_uint64 extraFramesRead;
+        ma_decoder_read_pcm_frames(pDecoder, (char*)pOutput + framesRead * bytesPerFrame, remainingFrames, &extraFramesRead);
+    }
+
+    (void)pInput; // Unused
+}

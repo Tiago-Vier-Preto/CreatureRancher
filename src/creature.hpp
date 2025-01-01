@@ -11,7 +11,7 @@ class Creature {
 public:
     Creature(float x, float y, float z, float jump_velocity, float jump_chance, float gravity);
     virtual ~Creature() = default;
-    void Update(float delta_t);
+    bool Update(float delta_t); //True if the slime started jumping
     void Jump();
     glm::vec4 GetPosition() const;
     float GetRotationAngle() const;

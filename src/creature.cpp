@@ -13,7 +13,8 @@ position(x, y, z, 1.0f), vertical_velocity(0.0f), is_jumping(false), rotation_an
 jump_velocity(jump_velocity), jump_chance(jump_chance), gravity(gravity){
 }
 
-void Creature::Update(float delta_t) {
+bool Creature::Update(float delta_t) {
+    bool started_jumping = false;
     if (!this->captured){
         vertical_velocity += gravity * delta_t;
         position.y += vertical_velocity * delta_t;
@@ -24,8 +25,9 @@ void Creature::Update(float delta_t) {
             is_jumping = false;
         }
 
-        if (!is_jumping && (rand() % 100) < this->jump_chance) { // chance de 1% de pular por frame
+        if (!is_jumping && (rand() % 100) < this->jump_chance) {
             Jump();
+            started_jumping = true;
         }
 
         if (is_jumping) {
@@ -40,6 +42,7 @@ void Creature::Update(float delta_t) {
             rotation_angle = target_rotation_angle;
         }
     }
+    return started_jumping;
 }
 
 void Creature::Jump() {
