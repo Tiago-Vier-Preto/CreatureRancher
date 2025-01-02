@@ -28,6 +28,9 @@
     <ClCompile Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\src\collisions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\src\stb_truetype.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\Users\tvpre\OneDrive\Documents\code\CreatureRancher\src\creature.hpp">

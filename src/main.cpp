@@ -25,7 +25,7 @@
 
 // Headers da biblioteca para carregar modelos obj
 #include <tiny_obj_loader.h>
-
+#include <glui/include/glui/glui.h>
 #include <stb_image.h>
 
 // Headers locais, definidos na pasta "include/"

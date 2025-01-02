@@ -5,6 +5,7 @@
 
 # Arquivos fonte C/C++. Inclua nesta lista todos os arquivos que devem
 # ser compilados.
+
 set(SOURCES
   src/main.cpp
   src/textrendering.cpp
@@ -19,6 +20,7 @@ set(SOURCES
   src/curve.cpp
   src/collisions.hpp
   src/collisions.cpp
+  src/stb_truetype.cpp
 )
 
 cmake_minimum_required(VERSION 3.5.0)
