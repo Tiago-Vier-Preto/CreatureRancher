@@ -385,7 +385,7 @@ namespace gl2d
 		//fbo is the default frame buffer, 0 means drawing to the screen.
 		//Quad count is the reserved quad capacity for drawing.
 		//If the capacity is exceded it will be extended but this will cost performance.
-		void create(GLuint fbo = 0, size_t quadCount = 1'000);
+		void create(GLuint fbo = 0, size_t quadCount = 1000);
 
 		//Clears the object alocated resources but
 		//does not clear resources allocated by user like textures, fonts and fbos!

@@ -245,6 +245,8 @@ bool g_IsSprinting = false;
 const float NORMAL_SPEED = 5.0f;
 const float SPRINT_SPEED = 10.0f;
 
+glui::RendererUi uirenderer;
+
 int main(int argc, char* argv[])
 {
     // Inicializamos a biblioteca GLFW, utilizada para criar uma janela do
