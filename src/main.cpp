@@ -246,8 +246,6 @@ const float NORMAL_SPEED = 5.0f;
 const float SPRINT_SPEED = 10.0f;
 
 glui::RendererUi uirenderer;
-enum GameState{GAME, MAIN_MENU, PAUSED, WIN};
-GameState current_game_state = GAME;
 
 int main(int argc, char* argv[])
 {
@@ -531,453 +529,443 @@ int main(int argc, char* argv[])
 
     while (!glfwWindowShouldClose(window))
     {
-        switch(current_game_state)
-        {
-            case MAIN_MENU:
-                break;
-            case GAME:
-                // Aqui executamos as operações de renderização
+        // Aqui executamos as operações de renderização
 
-                // Definimos a cor do "fundo" do framebuffer como branco.  Tal cor é
-                // definida como coeficientes RGBA: Red, Green, Blue, Alpha; isto é:
-                // Vermelho, Verde, Azul, Alpha (valor de transparência).
-                // Conversaremos sobre sistemas de cores nas aulas de Modelos de Iluminação.
-                //
-                //           R     G     B     A
-                glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        // Definimos a cor do "fundo" do framebuffer como branco.  Tal cor é
+        // definida como coeficientes RGBA: Red, Green, Blue, Alpha; isto é:
+        // Vermelho, Verde, Azul, Alpha (valor de transparência).
+        // Conversaremos sobre sistemas de cores nas aulas de Modelos de Iluminação.
+        //
+        //           R     G     B     A
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-                // "Pintamos" todos os pixels do framebuffer com a cor definida acima,
-                // e também resetamos todos os pixels do Z-buffer (depth buffer).
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // "Pintamos" todos os pixels do framebuffer com a cor definida acima,
+        // e também resetamos todos os pixels do Z-buffer (depth buffer).
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                // Pedimos para a GPU utilizar o programa de GPU criado acima (contendo
-                // os shaders de vértice e fragmentos).
-                glUseProgram(g_GpuProgramID);
+        // Pedimos para a GPU utilizar o programa de GPU criado acima (contendo
+        // os shaders de vértice e fragmentos).
+        glUseProgram(g_GpuProgramID);
 
-                // Computamos a posição da câmera utilizando coordenadas esféricas.  As
-                // variáveis g_CameraDistance, g_CameraPhi, e g_CameraTheta são
-                // controladas pelo mouse do usuário. Veja as funções CursorPosCallback()
-                // e ScrollCallback().
-                float r = g_CameraDistance;
-                float y = r*sin(g_CameraPhi);
-                float z = r*cos(g_CameraPhi)*cos(g_CameraTheta);
-                float x = r*cos(g_CameraPhi)*sin(g_CameraTheta);
+        // Computamos a posição da câmera utilizando coordenadas esféricas.  As
+        // variáveis g_CameraDistance, g_CameraPhi, e g_CameraTheta são
+        // controladas pelo mouse do usuário. Veja as funções CursorPosCallback()
+        // e ScrollCallback().
+        float r = g_CameraDistance;
+        float y = r*sin(g_CameraPhi);
+        float z = r*cos(g_CameraPhi)*cos(g_CameraTheta);
+        float x = r*cos(g_CameraPhi)*sin(g_CameraTheta);
 
-                // Abaixo definimos as varáveis que efetivamente definem a câmera virtual.
-                // Veja slides 195-227 e 229-234 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
-                // glm::vec4 camera_position_c  = glm::vec4(x,y,z,1.0f); // Ponto "c", centro da câmera
-                // glm::vec4 camera_lookat_l    = glm::vec4(0.0f,0.0f,0.0f,1.0f); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
+        // Abaixo definimos as varáveis que efetivamente definem a câmera virtual.
+        // Veja slides 195-227 e 229-234 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
+        // glm::vec4 camera_position_c  = glm::vec4(x,y,z,1.0f); // Ponto "c", centro da câmera
+        // glm::vec4 camera_lookat_l    = glm::vec4(0.0f,0.0f,0.0f,1.0f); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
 
-                glm::vec4 camera_view_vector = glm::vec4(-x, -y, -z, 0.0f); // Vetor "view", sentido para onde a câmera está virada
-                glm::vec4 camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
+        glm::vec4 camera_view_vector = glm::vec4(-x, -y, -z, 0.0f); // Vetor "view", sentido para onde a câmera está virada
+        glm::vec4 camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
 
-                glm::vec4 w_vector = -camera_view_vector;
-                glm::vec4 u_vector = crossproduct(camera_up_vector, w_vector);
+        glm::vec4 w_vector = -camera_view_vector;
+        glm::vec4 u_vector = crossproduct(camera_up_vector, w_vector);
 
-                u_vector = u_vector / norm(u_vector);
-                w_vector = w_vector / norm(w_vector);
+        u_vector = u_vector / norm(u_vector);
+        w_vector = w_vector / norm(w_vector);
 
-                float current_time = (float)glfwGetTime();
-                float delta_t = current_time - prev_time;
-                slime_spawn_timer += delta_t;
-                prev_time = current_time;
+        float current_time = (float)glfwGetTime();
+        float delta_t = current_time - prev_time;
+        slime_spawn_timer += delta_t;
+        prev_time = current_time;
 
-                float speed = g_IsSprinting ? SPRINT_SPEED : NORMAL_SPEED;
+        float speed = g_IsSprinting ? SPRINT_SPEED : NORMAL_SPEED;
 
-                bool started_jumping;
-                // Initialize variables to track the loudest jump
-                float maxVolume = 0.0f;
-                Creature* loudestCreature = nullptr;
+        bool started_jumping;
+        // Initialize variables to track the loudest jump
+        float maxVolume = 0.0f;
+        Creature* loudestCreature = nullptr;
 
-                // Loop through all creatures to update and find the loudest jump
-                for (auto& creature : creatures) {
-                    bool started_jumping = creature->Update(delta_t);
-                    if (started_jumping) {
-                        glm::vec3 playerPos = glm::vec3(camera_position_c);
-                        glm::vec3 slimePos = glm::vec3(creature->GetPosition());
-                        float distance = glm::distance(playerPos, slimePos);
+        // Loop through all creatures to update and find the loudest jump
+        for (auto& creature : creatures) {
+            bool started_jumping = creature->Update(delta_t);
+            if (started_jumping) {
+                glm::vec3 playerPos = glm::vec3(camera_position_c);
+                glm::vec3 slimePos = glm::vec3(creature->GetPosition());
+                float distance = glm::distance(playerPos, slimePos);
 
-                        // Normalize distance to volume
-                        float maxDistance = 50.0f; // Maximum distance to hear sound
-                        float volume = 1.0f - glm::clamp(distance / maxDistance, 0.0f, 1.0f);
+                // Normalize distance to volume
+                float maxDistance = 50.0f; // Maximum distance to hear sound
+                float volume = 1.0f - glm::clamp(distance / maxDistance, 0.0f, 1.0f);
 
-                        // Track the loudest jump
-                        if (volume > maxVolume) {
-                            maxVolume = volume;
-                            loudestCreature = creature;
-                        }
-                    }
+                // Track the loudest jump
+                if (volume > maxVolume) {
+                    maxVolume = volume;
+                    loudestCreature = creature;
                 }
-
-                // Play the sound for the loudest jump if any
-                if (loudestCreature != nullptr) {
-                    ma_sound_set_volume(&slime_jump_sound, maxVolume);
-                    ma_sound_start(&slime_jump_sound);
-                }
-                if (slime_spawn_timer >= SLIME_SPAWN_TIME && slime_count < SLIME_LIMIT) {
-                    // Reset the spawn timer
-                    slime_spawn_timer = 0.0f;
-
-                    // Spawn a new slime and add it to the creatures vector
-                    Creature* new_slime = SpawnCreature(map_width, map_length, creatures); // Adjust SpawnCreature parameters as needed
-                    slime_count++;
-                    creatures.push_back(new_slime);
-                }
-
-                g_CameraVerticalVelocity += GRAVITY * delta_t;
-                camera_position_c.y += g_CameraVerticalVelocity * delta_t;
-
-                if (camera_position_c.y < GROUND_LEVEL)
-                {
-                    camera_position_c.y = GROUND_LEVEL;
-                    g_CameraVerticalVelocity = 0.0f; // reseta a velocidade vertical quando houver colisao com o chao
-                    g_IsJumping = false;
-                }
-
-                // Atualizamos a posição da câmera utilizando as teclas W, A, S, D
-                bool playerMoved = false;
-                if (g_WkeyPressed) {
-                    camera_position_c += -w_vector * speed * delta_t;
-                    playerMoved = true;
-                }
-                if (g_SkeyPressed) {
-                    camera_position_c += w_vector * speed * delta_t;
-                    playerMoved = true;
-                }
-                if (g_AkeyPressed) {
-                    camera_position_c += -u_vector * speed * delta_t;
-                    playerMoved = true;
-                }
-                if (g_DkeyPressed) {
-                    camera_position_c += u_vector * speed * delta_t;
-                    playerMoved = true;
-                }
-
-                // Play Step sound if the player moved
-                if (playerMoved && !g_IsJumping) {
-                    ma_sound_set_volume(&step_sound, g_IsSprinting ? 1.0f : 0.8f);
-                    ma_sound_set_pitch(&step_sound, g_IsSprinting ? 1.2f : 1.0f); // Increase pitch when sprinting
-                    ma_sound_start(&step_sound);
-                }
-                if (g_Player_Started_Jumping) {
-                    ma_sound_start(&jump_sound);
-                    g_Player_Started_Jumping = false;
-                }
-                
-                // Computamos a matriz "View" utilizando os parâmetros da câmera para
-                // definir o sistema de coordenadas da câmera.  Veja slides 2-14, 184-190 e 236-242 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
-                glm::mat4 view = Matrix_Camera_View(camera_position_c, camera_view_vector, camera_up_vector);
-
-                // Agora computamos a matriz de Projeção.
-                glm::mat4 projection;
-
-                // Note que, no sistema de coordenadas da câmera, os planos near e far
-                // estão no sentido negativo! Veja slides 176-204 do documento Aula_09_Projecoes.pdf.
-                float nearplane = -0.1f;  // Posição do "near plane"
-                float farplane  = -1000.0f; // Posição do "far plane"
-
-                if (g_UsePerspectiveProjection)
-                {
-                    // Projeção Perspectiva.
-                    // Para definição do field of view (FOV), veja slides 205-215 do documento Aula_09_Projecoes.pdf.
-                    float field_of_view = 3.141592f / 3.0f;
-                    projection = Matrix_Perspective(field_of_view, g_ScreenRatio, nearplane, farplane);
-                }
-                else
-                {
-                    // Projeção Ortográfica.
-                    // Para definição dos valores l, r, b, t ("left", "right", "bottom", "top"),
-                    // PARA PROJEÇÃO ORTOGRÁFICA veja slides 219-224 do documento Aula_09_Projecoes.pdf.
-                    // Para simular um "zoom" ortográfico, computamos o valor de "t"
-                    // utilizando a variável g_CameraDistance.
-                    float t = 1.5f*g_CameraDistance/2.5f;
-                    float b = -t;
-                    float r = t*g_ScreenRatio;
-                    float l = -r;
-                    projection = Matrix_Orthographic(l, r, b, t, nearplane, farplane);
-                }
-
-                glm::mat4 model = Matrix_Identity(); // Transformação identidade de modelagem
-
-                // Enviamos as matrizes "view" e "projection" para a placa de vídeo
-                // (GPU). Veja o arquivo "shader_vertex.glsl", onde estas são
-                // efetivamente aplicadas em todos os pontos.
-                glUniformMatrix4fv(g_view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
-                glUniformMatrix4fv(g_projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
-
-                #define BASE_PLANE    2
-                #define CREATURE 3
-                #define CUBE     11
-                #define WEAPON   12
-                #define PRIMEIRO_PLANO 20
-                // Desenhamos o plano do chão
-                for(int i = 0; i < 9; i++)
-                {
-                    model = Matrix_Translate(-200.0f + 200 * (i % 3),-1.1f,-200.0f + 200 * (i / 3))
-                        * Matrix_Scale(100, 1.0f, 100);
-                    glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-                    glUniform1i(g_object_id_uniform, 20 + i);
-                    glUniform2f(tilingLocation, 10.0f, 10.0f);
-                    DrawVirtualObject("the_plane");
-                }
-
-                glm::vec4 weapon_position = camera_position_c + 0.4f * normalize(camera_view_vector) - 0.25f * normalize(crossproduct(camera_up_vector, camera_view_vector)) - 0.1f * camera_up_vector;
-                glm::vec4 weapon_direction = normalize(camera_view_vector);
-                glm::vec4 weapon_right = normalize(crossproduct(camera_up_vector, weapon_direction));
-                glm::vec4 weapon_up = normalize(crossproduct(weapon_direction, weapon_right));
-
-                glm::mat4 weapon_rotation = glm::mat4(weapon_right.x, weapon_right.y, weapon_right.z, 0.0f,
-                                                    weapon_up.x, weapon_up.y, weapon_up.z, 0.0f,
-                                                    weapon_direction.x, weapon_direction.y, weapon_direction.z, 0.0f,
-                                                    0.0f, 0.0f, 0.0f, 1.0f);
-
-                model = Matrix_Translate(weapon_position.x, weapon_position.y, weapon_position.z)
-                    * weapon_rotation
-                    * Matrix_Scale(0.001f, 0.001f, 0.001f); 
-
-                glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-                glUniform1i(g_object_id_uniform, WEAPON);
-                glUniform2f(tilingLocation, 1.0f, 1.0f);
-                DrawVirtualObject("weapon");
-
-                glm::vec3 cubeCenter = glm::vec3(0.0f, 0.0f, 0.0f);
-                glm::vec3 cubeSize = glm::vec3(map_width, map_height, map_length);
-
-                AABB frontFace;
-                frontFace.min = cubeCenter + glm::vec3(-cubeSize.x, -cubeSize.y, cubeSize.z);
-                frontFace.max = cubeCenter + glm::vec3(cubeSize.x, cubeSize.y, cubeSize.z);
-                glm::vec4 frontFaceDirection = glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
-
-                AABB backFace;
-                backFace.min = cubeCenter + glm::vec3(-cubeSize.x, -cubeSize.y, -cubeSize.z);
-                backFace.max = cubeCenter + glm::vec3(cubeSize.x, cubeSize.y, -cubeSize.z);
-                glm::vec4 backFaceDirection = glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
-
-                AABB leftFace;
-                leftFace.min = cubeCenter + glm::vec3(-cubeSize.x, -cubeSize.y, -cubeSize.z);
-                leftFace.max = cubeCenter + glm::vec3(-cubeSize.x, cubeSize.y, cubeSize.z);
-                glm::vec4 leftFaceDirection = glm::vec4(-1.0f, 0.0f, 0.0f, 0.0f);
-
-                AABB rightFace;
-                
-                rightFace.min = cubeCenter + glm::vec3(cubeSize.x, -cubeSize.y, -cubeSize.z);
-                rightFace.max = cubeCenter + glm::vec3(cubeSize.x, cubeSize.y, cubeSize.z);
-                glm::vec4 rightFaceDirection = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
-
-                AABB cameraAABB = ComputeAABB(glm::vec3(camera_position_c), glm::vec3(0.7f, 0.7f, 2.5f));
-
-                // Fase de colisao Broad Phase
-                if (CheckAABBOverlap(cameraAABB, frontFace)) potentialCollisions.push_back({-2, 0});
-                if (CheckAABBOverlap(cameraAABB, backFace)) potentialCollisions.push_back({-2, 1});
-                if (CheckAABBOverlap(cameraAABB, leftFace)) potentialCollisions.push_back({-2, 2});
-                if (CheckAABBOverlap(cameraAABB, rightFace)) potentialCollisions.push_back({-2, 3});
-                
-                for (size_t i = 0; i < creatures.size(); ++i) {
-                    AABB creatureAABB = ComputeAABB(creatures[i]->GetPosition(), glm::vec3(0.55f, 0.55f, 0.55f));
-                    if (CheckAABBOverlap(cameraAABB, creatureAABB)) {
-                        potentialCollisions.push_back({-1, i}); // -1 para identificar a camera
-                    }
-                }
-
-                // Fase de colisao Narrow Phase
-                for (const auto& pair : potentialCollisions) {
-                    if (pair.first == -1) { // Colisão entre a camera e uma criatura
-                        int creatureIndex = pair.second;
-                        if (CheckSphereSphereOverlap(camera_position_c, 0.6,
-                                            creatures[creatureIndex]->GetPosition(), 0.6)) {
-                            glm::vec4 direction = camera_position_c - creatures[creatureIndex]->GetPosition();
-                            float magnitude = glm::length(direction);
-                            if (magnitude > 1e-5f) {
-                                direction = glm::normalize(direction);
-                                camera_position_c += direction * ((speed == SPRINT_SPEED ? SPRINT_SPEED : NORMAL_SPEED) * delta_t * 0.05f);
-                            }
-                            if (speed == SPRINT_SPEED) {
-                                camera_position_c += direction * SPRINT_SPEED * delta_t * 0.05f;
-                            } else if (speed == NORMAL_SPEED) {
-                                camera_position_c += direction * NORMAL_SPEED * delta_t * 0.05f;
-                            } 
-                        }
-                    } else if(pair.first == -2) { // Colisão camera com as faces do cubo
-                        if (pair.second == 0) {
-                            if (speed == SPRINT_SPEED) camera_position_c += frontFaceDirection * SPRINT_SPEED * delta_t * 0.05f;
-                            else if (speed == NORMAL_SPEED) camera_position_c -= frontFaceDirection * NORMAL_SPEED * delta_t * 0.05f;
-                        } else if (pair.second == 1) {
-                            if (speed == SPRINT_SPEED) camera_position_c += backFaceDirection * SPRINT_SPEED * delta_t * 0.05f;
-                            else if (speed == NORMAL_SPEED) camera_position_c -= backFaceDirection * NORMAL_SPEED * delta_t * 0.05f;
-                        } else if (pair.second == 2) {
-                            if (speed == SPRINT_SPEED) camera_position_c += leftFaceDirection * SPRINT_SPEED * delta_t * 0.05f;
-                            else if (speed == NORMAL_SPEED) camera_position_c -= leftFaceDirection * NORMAL_SPEED * delta_t * 0.05f;
-                        } else if (pair.second == 3) {
-                            if (speed == SPRINT_SPEED) camera_position_c += rightFaceDirection * SPRINT_SPEED * delta_t * 0.05f;
-                            else if (speed == NORMAL_SPEED) camera_position_c -= rightFaceDirection * NORMAL_SPEED * delta_t * 0.05f;
-                        }
-                    }
-                }
-
-                for (const auto& creature : creatures) {
-                    glm::vec4 position = creature->GetPosition();
-                    float rotation_angle = creature->GetRotationAngle();
-
-                    if (g_RightMouseButtonPressed) {
-                        ma_sound_start(&suction_sound);
-                        if (inWeaponRange(weapon_position, weapon_direction, position, 7.0f, 30.0f)) {
-                            if (!creature->captured) {  // Inicia a captura se ainda não estiver capturada
-                                creature->captured = true;
-                                captureTime = 0.0f;  // Resetando o tempo de captura
-                            }
-
-                            captureTime += delta_t / 2.0f; // Ajuste a taxa de incremento de tempo
-                            captureTime = glm::clamp(captureTime, 0.0f, 1.0f); // Normaliza entre 0 e 1
-
-                            glm::vec3 start = glm::vec3(position);
-                            glm::vec3 end = glm::vec3(weapon_position);
-                            glm::vec3 newPosition = bezierSpiralPosition(start, end, captureTime, 10, GROUND_LEVEL);
-                            position = glm::vec4(newPosition, 1.0f);
-
-                            if (captureTime >= 1.0f) {
-                                captureTime = 0.0f;  // Resetando o tempo de captura
-                                position = glm::vec4(end, 1.0f); // Finaliza no centro da arma
-                            }
-
-                            lastPosition = position;  // Atualiza a posição final durante o movimento
-                        } else {
-                            if (creature->captured) {
-                                creature->captured = false; // Finaliza a captura
-                                creature->setPosition(lastPosition);  // Define a posição final quando o botão é solto
-                            } 
-                        }
-                    } else {
-                        // Se o botão do mouse foi solto e a criatura estava capturada
-                        if (creature->captured) {
-                            creature->captured = false; // Finaliza a captura
-                            creature->setPosition(lastPosition);  // Define a posição final quando o botão é solto
-                            position = lastPosition;
-                        }
-                    }      
-        
-                    if (creature->GetType() == 0) { // Anemo
-                        model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
-                                    * Matrix_Rotate_Y(rotation_angle) 
-                                    * Matrix_Scale(1.0f, 1.0f, 1.0f);
-                        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-                        glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
-                        glUniform2f(tilingLocation, 1.0f, 1.0f);
-                        DrawVirtualObject("anemo1");
-                        DrawVirtualObject("anemo2");
-                        DrawVirtualObject("anemo3");
-                    } else if (creature->GetType() == 1) { // Cryo
-                        model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
-                                    * Matrix_Rotate_Y(rotation_angle) 
-                                    * Matrix_Rotate_X(3*3.141592f/2.0f) 
-                                    * Matrix_Scale(1.0f, 1.0f, 1.0f);
-                        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-                        glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
-                        glUniform2f(tilingLocation, 1.0f, 1.0f);
-                        DrawVirtualObject("cryo1");
-                        DrawVirtualObject("cryo2");
-                    } else if (creature->GetType() == 2) { // Dendro
-                        model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
-                                    * Matrix_Rotate_Y(rotation_angle) 
-                                    * Matrix_Rotate_X(3*3.141592f/2.0f)
-                                    * Matrix_Scale(1.0f, 1.0f, 1.0f);
-                        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-                        glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
-                        glUniform2f(tilingLocation, 1.0f, 1.0f);
-                        DrawVirtualObject("dendro1");
-                        DrawVirtualObject("dendro2");
-                        DrawVirtualObject("dendro3");
-                        DrawVirtualObject("dendro4");
-                        DrawVirtualObject("dendro5");
-                        DrawVirtualObject("dendro6");
-                        DrawVirtualObject("dendro7");
-                        DrawVirtualObject("dendro8");
-                        DrawVirtualObject("dendro9");
-                        DrawVirtualObject("dendro10");
-                        DrawVirtualObject("dendro11");
-                        DrawVirtualObject("dendro12");
-                        DrawVirtualObject("dendro13");
-                        DrawVirtualObject("dendro14");
-                        DrawVirtualObject("dendro15");
-                        DrawVirtualObject("dendro16");
-                    } else if (creature->GetType() == 3) { // Electro
-                        model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
-                                    * Matrix_Rotate_Y(rotation_angle) 
-                                    * Matrix_Scale(0.01f, 0.01f, 0.01f);
-                        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-                        glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
-                        glUniform2f(tilingLocation, 1.0f, 1.0f);
-                        DrawVirtualObject("electro1");
-                        DrawVirtualObject("electro2");
-                        DrawVirtualObject("electro3");
-                    } else if (creature->GetType() == 4) { // Fire
-                        model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
-                                    * Matrix_Rotate_Y(rotation_angle) 
-                                    * Matrix_Scale(0.01f, 0.01f, 0.01f);
-                        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-                        glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
-                        glUniform2f(tilingLocation, 1.0f, 1.0f); 
-                        DrawVirtualObject("fire1");
-                        DrawVirtualObject("fire2");
-                    } else if (creature->GetType() == 5) { // Geo
-                        model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
-                                    * Matrix_Rotate_Y(rotation_angle) 
-                                    * Matrix_Scale(0.01f, 0.01f, 0.01f);
-                        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-                        glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
-                        glUniform2f(tilingLocation, 1.0f, 1.0f);
-                        DrawVirtualObject("geo1");
-                    } else if (creature->GetType() == 6) { // Mutated Electro
-                        model = Matrix_Translate(position.x, position.y - 1.5f, position.z)
-                                    * Matrix_Rotate_Y(rotation_angle)
-                                    * Matrix_Scale(0.01f, 0.01f, 0.01f);
-                        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-                        glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
-                        glUniform2f(tilingLocation, 1.0f, 1.0f); 
-                        DrawVirtualObject("mutated-electro1");
-                        DrawVirtualObject("mutated-electro2");
-                        DrawVirtualObject("mutated-electro3");
-                    } else if (creature->GetType() == 7) { // Water
-                        model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
-                                    * Matrix_Rotate_Y(rotation_angle) 
-                                    * Matrix_Scale(0.01f, 0.01f, 0.01f);
-                        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-                        glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
-                        glUniform2f(tilingLocation, 1.0f, 1.0f);
-                        DrawVirtualObject("water1");
-                        DrawVirtualObject("water2");
-                    }
-                }
-
-                // Desenhamos o modelo do cubo
-                model = Matrix_Translate(0.0f,0.0f,0.0f)
-                        * Matrix_Scale(map_width, map_height, map_length);
-                glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-                glUniform1i(g_object_id_uniform, CUBE);
-                glUniform2f(tilingLocation, 1.0f, 1.0f);
-                DrawVirtualObject("cube");
-
-                // Imprimimos na tela informação sobre o número de quadros renderizados
-                // por segundo (frames per second).
-                TextRendering_ShowFramesPerSecond(window);
-
-                // O framebuffer onde OpenGL executa as operações de renderização não
-                // é o mesmo que está sendo mostrado para o usuário, caso contrário
-                // seria possível ver artefatos conhecidos como "screen tearing". A
-                // chamada abaixo faz a troca dos buffers, mostrando para o usuário
-                // tudo que foi renderizado pelas funções acima.
-                // Veja o link: https://en.wikipedia.org/w/index.php?title=Multiple_buffering&oldid=793452829#Double_buffering_in_computer_graphics
-                glfwSwapBuffers(window);
-
-                // Verificamos com o sistema operacional se houve alguma interação do
-                // usuário (teclado, mouse, ...). Caso positivo, as funções de callback
-                // definidas anteriormente usando glfwSet*Callback() serão chamadas
-                // pela biblioteca GLFW.
-                glfwPollEvents();
-                break;
-
-
+            }
         }
 
+        // Play the sound for the loudest jump if any
+        if (loudestCreature != nullptr) {
+            ma_sound_set_volume(&slime_jump_sound, maxVolume);
+            ma_sound_start(&slime_jump_sound);
+        }
+        if (slime_spawn_timer >= SLIME_SPAWN_TIME && slime_count < SLIME_LIMIT) {
+            // Reset the spawn timer
+            slime_spawn_timer = 0.0f;
+
+            // Spawn a new slime and add it to the creatures vector
+            Creature* new_slime = SpawnCreature(map_width, map_length, creatures); // Adjust SpawnCreature parameters as needed
+            slime_count++;
+            creatures.push_back(new_slime);
+        }
+
+        g_CameraVerticalVelocity += GRAVITY * delta_t;
+        camera_position_c.y += g_CameraVerticalVelocity * delta_t;
+
+        if (camera_position_c.y < GROUND_LEVEL)
+        {
+            camera_position_c.y = GROUND_LEVEL;
+            g_CameraVerticalVelocity = 0.0f; // reseta a velocidade vertical quando houver colisao com o chao
+            g_IsJumping = false;
+        }
+
+        // Atualizamos a posição da câmera utilizando as teclas W, A, S, D
+        bool playerMoved = false;
+        if (g_WkeyPressed) {
+            camera_position_c += -w_vector * speed * delta_t;
+            playerMoved = true;
+        }
+        if (g_SkeyPressed) {
+            camera_position_c += w_vector * speed * delta_t;
+            playerMoved = true;
+        }
+        if (g_AkeyPressed) {
+            camera_position_c += -u_vector * speed * delta_t;
+            playerMoved = true;
+        }
+        if (g_DkeyPressed) {
+            camera_position_c += u_vector * speed * delta_t;
+            playerMoved = true;
+        }
+
+        // Play Step sound if the player moved
+        if (playerMoved && !g_IsJumping) {
+            ma_sound_set_volume(&step_sound, g_IsSprinting ? 1.0f : 0.8f);
+            ma_sound_set_pitch(&step_sound, g_IsSprinting ? 1.2f : 1.0f); // Increase pitch when sprinting
+            ma_sound_start(&step_sound);
+        }
+        if (g_Player_Started_Jumping) {
+            ma_sound_start(&jump_sound);
+            g_Player_Started_Jumping = false;
+        }
+        
+        // Computamos a matriz "View" utilizando os parâmetros da câmera para
+        // definir o sistema de coordenadas da câmera.  Veja slides 2-14, 184-190 e 236-242 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
+        glm::mat4 view = Matrix_Camera_View(camera_position_c, camera_view_vector, camera_up_vector);
+
+        // Agora computamos a matriz de Projeção.
+        glm::mat4 projection;
+
+        // Note que, no sistema de coordenadas da câmera, os planos near e far
+        // estão no sentido negativo! Veja slides 176-204 do documento Aula_09_Projecoes.pdf.
+        float nearplane = -0.1f;  // Posição do "near plane"
+        float farplane  = -1000.0f; // Posição do "far plane"
+
+        if (g_UsePerspectiveProjection)
+        {
+            // Projeção Perspectiva.
+            // Para definição do field of view (FOV), veja slides 205-215 do documento Aula_09_Projecoes.pdf.
+            float field_of_view = 3.141592f / 3.0f;
+            projection = Matrix_Perspective(field_of_view, g_ScreenRatio, nearplane, farplane);
+        }
+        else
+        {
+            // Projeção Ortográfica.
+            // Para definição dos valores l, r, b, t ("left", "right", "bottom", "top"),
+            // PARA PROJEÇÃO ORTOGRÁFICA veja slides 219-224 do documento Aula_09_Projecoes.pdf.
+            // Para simular um "zoom" ortográfico, computamos o valor de "t"
+            // utilizando a variável g_CameraDistance.
+            float t = 1.5f*g_CameraDistance/2.5f;
+            float b = -t;
+            float r = t*g_ScreenRatio;
+            float l = -r;
+            projection = Matrix_Orthographic(l, r, b, t, nearplane, farplane);
+        }
+
+        glm::mat4 model = Matrix_Identity(); // Transformação identidade de modelagem
+
+        // Enviamos as matrizes "view" e "projection" para a placa de vídeo
+        // (GPU). Veja o arquivo "shader_vertex.glsl", onde estas são
+        // efetivamente aplicadas em todos os pontos.
+        glUniformMatrix4fv(g_view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
+        glUniformMatrix4fv(g_projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
+
+        #define BASE_PLANE    2
+        #define CREATURE 3
+        #define CUBE     11
+        #define WEAPON   12
+        #define PRIMEIRO_PLANO 20
+        // Desenhamos o plano do chão
+        for(int i = 0; i < 9; i++)
+        {
+            model = Matrix_Translate(-200.0f + 200 * (i % 3),-1.1f,-200.0f + 200 * (i / 3))
+                * Matrix_Scale(100, 1.0f, 100);
+            glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+            glUniform1i(g_object_id_uniform, 20 + i);
+            glUniform2f(tilingLocation, 10.0f, 10.0f);
+            DrawVirtualObject("the_plane");
+        }
+
+        glm::vec4 weapon_position = camera_position_c + 0.4f * normalize(camera_view_vector) - 0.25f * normalize(crossproduct(camera_up_vector, camera_view_vector)) - 0.1f * camera_up_vector;
+        glm::vec4 weapon_direction = normalize(camera_view_vector);
+        glm::vec4 weapon_right = normalize(crossproduct(camera_up_vector, weapon_direction));
+        glm::vec4 weapon_up = normalize(crossproduct(weapon_direction, weapon_right));
+
+        glm::mat4 weapon_rotation = glm::mat4(weapon_right.x, weapon_right.y, weapon_right.z, 0.0f,
+                                              weapon_up.x, weapon_up.y, weapon_up.z, 0.0f,
+                                              weapon_direction.x, weapon_direction.y, weapon_direction.z, 0.0f,
+                                              0.0f, 0.0f, 0.0f, 1.0f);
+
+        model = Matrix_Translate(weapon_position.x, weapon_position.y, weapon_position.z)
+              * weapon_rotation
+              * Matrix_Scale(0.001f, 0.001f, 0.001f); 
+
+        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, WEAPON);
+        glUniform2f(tilingLocation, 1.0f, 1.0f);
+        DrawVirtualObject("weapon");
+
+        glm::vec3 cubeCenter = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 cubeSize = glm::vec3(map_width, map_height, map_length);
+
+        AABB frontFace;
+        frontFace.min = cubeCenter + glm::vec3(-cubeSize.x, -cubeSize.y, cubeSize.z);
+        frontFace.max = cubeCenter + glm::vec3(cubeSize.x, cubeSize.y, cubeSize.z);
+        glm::vec4 frontFaceDirection = glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
+
+        AABB backFace;
+        backFace.min = cubeCenter + glm::vec3(-cubeSize.x, -cubeSize.y, -cubeSize.z);
+        backFace.max = cubeCenter + glm::vec3(cubeSize.x, cubeSize.y, -cubeSize.z);
+        glm::vec4 backFaceDirection = glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
+
+        AABB leftFace;
+        leftFace.min = cubeCenter + glm::vec3(-cubeSize.x, -cubeSize.y, -cubeSize.z);
+        leftFace.max = cubeCenter + glm::vec3(-cubeSize.x, cubeSize.y, cubeSize.z);
+        glm::vec4 leftFaceDirection = glm::vec4(-1.0f, 0.0f, 0.0f, 0.0f);
+
+        AABB rightFace;
+        
+        rightFace.min = cubeCenter + glm::vec3(cubeSize.x, -cubeSize.y, -cubeSize.z);
+        rightFace.max = cubeCenter + glm::vec3(cubeSize.x, cubeSize.y, cubeSize.z);
+        glm::vec4 rightFaceDirection = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+
+        AABB cameraAABB = ComputeAABB(glm::vec3(camera_position_c), glm::vec3(0.7f, 0.7f, 2.5f));
+
+        // Fase de colisao Broad Phase
+        if (CheckAABBOverlap(cameraAABB, frontFace)) potentialCollisions.push_back({-2, 0});
+        if (CheckAABBOverlap(cameraAABB, backFace)) potentialCollisions.push_back({-2, 1});
+        if (CheckAABBOverlap(cameraAABB, leftFace)) potentialCollisions.push_back({-2, 2});
+        if (CheckAABBOverlap(cameraAABB, rightFace)) potentialCollisions.push_back({-2, 3});
+        
+        for (size_t i = 0; i < creatures.size(); ++i) {
+            AABB creatureAABB = ComputeAABB(creatures[i]->GetPosition(), glm::vec3(0.55f, 0.55f, 0.55f));
+            if (CheckAABBOverlap(cameraAABB, creatureAABB)) {
+                potentialCollisions.push_back({-1, i}); // -1 para identificar a camera
+            }
+        }
+
+        // Fase de colisao Narrow Phase
+        for (const auto& pair : potentialCollisions) {
+            if (pair.first == -1) { // Colisão entre a camera e uma criatura
+                int creatureIndex = pair.second;
+                if (CheckSphereSphereOverlap(camera_position_c, 0.6,
+                                    creatures[creatureIndex]->GetPosition(), 0.6)) {
+                    glm::vec4 direction = camera_position_c - creatures[creatureIndex]->GetPosition();
+                    float magnitude = glm::length(direction);
+                    if (magnitude > 1e-5f) {
+                        direction = glm::normalize(direction);
+                        camera_position_c += direction * ((speed == SPRINT_SPEED ? SPRINT_SPEED : NORMAL_SPEED) * delta_t * 0.05f);
+                    }
+                    if (speed == SPRINT_SPEED) {
+                        camera_position_c += direction * SPRINT_SPEED * delta_t * 0.05f;
+                    } else if (speed == NORMAL_SPEED) {
+                        camera_position_c += direction * NORMAL_SPEED * delta_t * 0.05f;
+                    } 
+                }
+            } else if(pair.first == -2) { // Colisão camera com as faces do cubo
+                if (pair.second == 0) {
+                    if (speed == SPRINT_SPEED) camera_position_c += frontFaceDirection * SPRINT_SPEED * delta_t * 0.05f;
+                    else if (speed == NORMAL_SPEED) camera_position_c -= frontFaceDirection * NORMAL_SPEED * delta_t * 0.05f;
+                } else if (pair.second == 1) {
+                    if (speed == SPRINT_SPEED) camera_position_c += backFaceDirection * SPRINT_SPEED * delta_t * 0.05f;
+                    else if (speed == NORMAL_SPEED) camera_position_c -= backFaceDirection * NORMAL_SPEED * delta_t * 0.05f;
+                } else if (pair.second == 2) {
+                    if (speed == SPRINT_SPEED) camera_position_c += leftFaceDirection * SPRINT_SPEED * delta_t * 0.05f;
+                    else if (speed == NORMAL_SPEED) camera_position_c -= leftFaceDirection * NORMAL_SPEED * delta_t * 0.05f;
+                } else if (pair.second == 3) {
+                    if (speed == SPRINT_SPEED) camera_position_c += rightFaceDirection * SPRINT_SPEED * delta_t * 0.05f;
+                    else if (speed == NORMAL_SPEED) camera_position_c -= rightFaceDirection * NORMAL_SPEED * delta_t * 0.05f;
+                }
+            }
+        }
+
+        for (const auto& creature : creatures) {
+            glm::vec4 position = creature->GetPosition();
+            float rotation_angle = creature->GetRotationAngle();
+
+            if (g_RightMouseButtonPressed) {
+                ma_sound_start(&suction_sound);
+                if (inWeaponRange(weapon_position, weapon_direction, position, 7.0f, 30.0f)) {
+                    if (!creature->captured) {  // Inicia a captura se ainda não estiver capturada
+                        creature->captured = true;
+                        captureTime = 0.0f;  // Resetando o tempo de captura
+                    }
+
+                    captureTime += delta_t / 2.0f; // Ajuste a taxa de incremento de tempo
+                    captureTime = glm::clamp(captureTime, 0.0f, 1.0f); // Normaliza entre 0 e 1
+
+                    glm::vec3 start = glm::vec3(position);
+                    glm::vec3 end = glm::vec3(weapon_position);
+                    glm::vec3 newPosition = bezierSpiralPosition(start, end, captureTime, 10, GROUND_LEVEL);
+                    position = glm::vec4(newPosition, 1.0f);
+
+                    if (captureTime >= 1.0f) {
+                        captureTime = 0.0f;  // Resetando o tempo de captura
+                        position = glm::vec4(end, 1.0f); // Finaliza no centro da arma
+                    }
+
+                    lastPosition = position;  // Atualiza a posição final durante o movimento
+                } else {
+                    if (creature->captured) {
+                        creature->captured = false; // Finaliza a captura
+                        creature->setPosition(lastPosition);  // Define a posição final quando o botão é solto
+                    } 
+                }
+            } else {
+                // Se o botão do mouse foi solto e a criatura estava capturada
+                if (creature->captured) {
+                    creature->captured = false; // Finaliza a captura
+                    creature->setPosition(lastPosition);  // Define a posição final quando o botão é solto
+                    position = lastPosition;
+                }
+            }      
+  
+            if (creature->GetType() == 0) { // Anemo
+                model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
+                            * Matrix_Rotate_Y(rotation_angle) 
+                            * Matrix_Scale(1.0f, 1.0f, 1.0f);
+                glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
+                glUniform2f(tilingLocation, 1.0f, 1.0f);
+                DrawVirtualObject("anemo1");
+                DrawVirtualObject("anemo2");
+                DrawVirtualObject("anemo3");
+            } else if (creature->GetType() == 1) { // Cryo
+                model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
+                            * Matrix_Rotate_Y(rotation_angle) 
+                            * Matrix_Rotate_X(3*3.141592f/2.0f) 
+                            * Matrix_Scale(1.0f, 1.0f, 1.0f);
+                glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
+                glUniform2f(tilingLocation, 1.0f, 1.0f);
+                DrawVirtualObject("cryo1");
+                DrawVirtualObject("cryo2");
+            } else if (creature->GetType() == 2) { // Dendro
+                model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
+                            * Matrix_Rotate_Y(rotation_angle) 
+                            * Matrix_Rotate_X(3*3.141592f/2.0f)
+                            * Matrix_Scale(1.0f, 1.0f, 1.0f);
+                glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
+                glUniform2f(tilingLocation, 1.0f, 1.0f);
+                DrawVirtualObject("dendro1");
+                DrawVirtualObject("dendro2");
+                DrawVirtualObject("dendro3");
+                DrawVirtualObject("dendro4");
+                DrawVirtualObject("dendro5");
+                DrawVirtualObject("dendro6");
+                DrawVirtualObject("dendro7");
+                DrawVirtualObject("dendro8");
+                DrawVirtualObject("dendro9");
+                DrawVirtualObject("dendro10");
+                DrawVirtualObject("dendro11");
+                DrawVirtualObject("dendro12");
+                DrawVirtualObject("dendro13");
+                DrawVirtualObject("dendro14");
+                DrawVirtualObject("dendro15");
+                DrawVirtualObject("dendro16");
+            } else if (creature->GetType() == 3) { // Electro
+                model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
+                            * Matrix_Rotate_Y(rotation_angle) 
+                            * Matrix_Scale(0.01f, 0.01f, 0.01f);
+                glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
+                glUniform2f(tilingLocation, 1.0f, 1.0f);
+                DrawVirtualObject("electro1");
+                DrawVirtualObject("electro2");
+                DrawVirtualObject("electro3");
+            } else if (creature->GetType() == 4) { // Fire
+                model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
+                            * Matrix_Rotate_Y(rotation_angle) 
+                            * Matrix_Scale(0.01f, 0.01f, 0.01f);
+                glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
+                glUniform2f(tilingLocation, 1.0f, 1.0f); 
+                DrawVirtualObject("fire1");
+                DrawVirtualObject("fire2");
+            } else if (creature->GetType() == 5) { // Geo
+                model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
+                            * Matrix_Rotate_Y(rotation_angle) 
+                            * Matrix_Scale(0.01f, 0.01f, 0.01f);
+                glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
+                glUniform2f(tilingLocation, 1.0f, 1.0f);
+                DrawVirtualObject("geo1");
+            } else if (creature->GetType() == 6) { // Mutated Electro
+                model = Matrix_Translate(position.x, position.y - 1.5f, position.z)
+                            * Matrix_Rotate_Y(rotation_angle)
+                            * Matrix_Scale(0.01f, 0.01f, 0.01f);
+                glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
+                glUniform2f(tilingLocation, 1.0f, 1.0f); 
+                DrawVirtualObject("mutated-electro1");
+                DrawVirtualObject("mutated-electro2");
+                DrawVirtualObject("mutated-electro3");
+            } else if (creature->GetType() == 7) { // Water
+                model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
+                            * Matrix_Rotate_Y(rotation_angle) 
+                            * Matrix_Scale(0.01f, 0.01f, 0.01f);
+                glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
+                glUniform2f(tilingLocation, 1.0f, 1.0f);
+                DrawVirtualObject("water1");
+                DrawVirtualObject("water2");
+            }
+        }
+
+        // Desenhamos o modelo do cubo
+        model = Matrix_Translate(0.0f,0.0f,0.0f)
+                * Matrix_Scale(map_width, map_height, map_length);
+        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, CUBE);
+        glUniform2f(tilingLocation, 1.0f, 1.0f);
+        DrawVirtualObject("cube");
+
+        // Imprimimos na tela informação sobre o número de quadros renderizados
+        // por segundo (frames per second).
+        TextRendering_ShowFramesPerSecond(window);
+
+        // O framebuffer onde OpenGL executa as operações de renderização não
+        // é o mesmo que está sendo mostrado para o usuário, caso contrário
+        // seria possível ver artefatos conhecidos como "screen tearing". A
+        // chamada abaixo faz a troca dos buffers, mostrando para o usuário
+        // tudo que foi renderizado pelas funções acima.
+        // Veja o link: https://en.wikipedia.org/w/index.php?title=Multiple_buffering&oldid=793452829#Double_buffering_in_computer_graphics
+        glfwSwapBuffers(window);
+
+        // Verificamos com o sistema operacional se houve alguma interação do
+        // usuário (teclado, mouse, ...). Caso positivo, as funções de callback
+        // definidas anteriormente usando glfwSet*Callback() serão chamadas
+        // pela biblioteca GLFW.
+        glfwPollEvents();
     }
     ma_device_uninit(&device);
     ma_decoder_uninit(&decoder);
