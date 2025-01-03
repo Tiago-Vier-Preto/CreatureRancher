@@ -33,6 +33,7 @@ uniform mat4 projection;
 #define SKYBOX  11
 #define WEAPON 12
 #define HEAVEN_SKYBOX 29
+#define GOD 30
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -77,6 +78,8 @@ uniform sampler2D TextureImage27;
 uniform sampler2D TextureImage28;
 
 uniform samplerCube heaven_skybox;
+
+uniform sampler2D god;
 
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
@@ -539,6 +542,20 @@ void main()
         color.rgb = Kd0;
         
         color.rgb = pow(color.rgb, vec3(1.0, 1.0, 1.0) / 2.2);
+    }
+    else if (object_id == GOD)
+    {
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(god, vec2(U,V)).rgb;
+
+        float lambert = max(0,dot(n,l));
+
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
     }
     else if (object_id == -1) 
     {

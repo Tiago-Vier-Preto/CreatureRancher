@@ -47,7 +47,7 @@
 #define map_width 300.0f
 #define map_length 300.0f
 #define map_height 300.0f
-
+#define M_PI 3.141592653589793238462643383279502884L
 #define NORMAL_MODE false
 #define CHEAT_MODE false
 #define START_MODE CHEAT_MODE
@@ -547,6 +547,7 @@ int main(int argc, char* argv[])
     LoadCubemap(faces_heaven);
     stbi_set_flip_vertically_on_load(true);
 
+    LoadTextureImage("../../data/god/god.png"); // 30
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel planemodel("../../data/plane.obj");
@@ -596,6 +597,11 @@ int main(int argc, char* argv[])
     ObjModel heaven_cubemodel("../../data/heaven_skybox/heaven_skybox.obj");
     ComputeNormals(&heaven_cubemodel);
     BuildTrianglesAndAddToVirtualScene(&heaven_cubemodel);
+
+    ObjModel god("../../data/god/god.obj");
+    ComputeNormals(&god);
+    BuildTrianglesAndAddToVirtualScene(&god);
+
 
     if ( argc > 1 )
     {
@@ -649,7 +655,7 @@ int main(int argc, char* argv[])
                 glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                 glUseProgram(g_GpuProgramID);
-                float r = g_CameraDistance;
+                float r = g_CameraDistance + 250;
                 float y = r*sin(g_CameraPhi);
                 float z = r*cos(g_CameraPhi)*cos(g_CameraTheta);
                 float x = r*cos(g_CameraPhi)*sin(g_CameraTheta);
@@ -684,12 +690,21 @@ int main(int argc, char* argv[])
                 
                 glm::mat4 model = Matrix_Identity();
                 #define HEAVEN_CUBE 29
+                #define GOD 30
                 model = Matrix_Translate(0.0f,0.0f,0.0f)
                         * Matrix_Scale(map_width, map_height, map_length);
                 glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
                 glUniform1i(g_object_id_uniform, HEAVEN_CUBE);
                 glUniform2f(tilingLocation, 1.0f, 1.0f);
                 DrawVirtualObject("heaven_cube");
+
+                model = Matrix_Translate(0.0f,0.0f,0.0f)
+                        * Matrix_Scale(map_width, map_height, map_length);
+                glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, GOD);
+                glUniform2f(tilingLocation, 1.0f, 1.0f);
+                DrawVirtualObject("god");
+
                 TextRendering_ShowFramesPerSecond(window);
                 glfwSwapBuffers(window);
                 if(g_ZerokeyPressed)
@@ -1439,6 +1454,7 @@ void LoadShadersFromFiles()
 
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "heaven_skybox"), 29);
 
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "god"), 30);
     glUseProgram(0);
 }
 
@@ -1900,12 +1916,6 @@ void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 // cima da janela OpenGL.
 void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 {
-    // Abaixo executamos o seguinte: caso o botão esquerdo do mouse esteja
-    // pressionado, computamos quanto que o mouse se movimento desde o último
-    // instante de tempo, e usamos esta movimentação para atualizar os
-    // parâmetros que definem a posição da câmera dentro da cena virtual.
-    // Assim, temos que o usuário consegue controlar a câmera.
-
     // Deslocamento do cursor do mouse em x e y de coordenadas de tela!
     float dx = xpos - g_LastCursorPosX;
     float dy = ypos - g_LastCursorPosY;
