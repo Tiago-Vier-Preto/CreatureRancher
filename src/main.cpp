@@ -308,29 +308,52 @@ int main(int argc, char* argv[])
     ma_result result;
     ma_device_config deviceConfig;
     ma_device device;
-    ma_decoder decoder;
+    ma_decoder decoder_game;
+    ma_decoder decoder_win;
+    ma_decoder decoder_menu;
+    ma_decoder* currentDecoder;
 
-    // Construct the path to the music file
-    const char* filePath = "../../data/music/game.wav"; // Relative path from src directory
-    result = ma_decoder_init_file(filePath, NULL, &decoder);
+    const char* game_music_filePath = "../../data/music/game.wav";
+    const char* win_music_filePath = "../../data/music/win.wav";
+    const char* menu_music_filePath = "../../data/music/menu.wav";
+    result = ma_decoder_init_file("../../data/music/game.wav", NULL, &decoder_game);
     if (result != MA_SUCCESS) {
-        printf("Failed to load music file: %s\n", filePath);
+        printf("Failed to load game music file.\n");
         return -1;
     }
 
+    result = ma_decoder_init_file("../../data/music/win.wav", NULL, &decoder_win);
+    if (result != MA_SUCCESS) {
+        printf("Failed to load win music file.\n");
+        ma_decoder_uninit(&decoder_game);
+        return -1;
+    }
+
+    result = ma_decoder_init_file("../../data/music/menu.wav", NULL, &decoder_menu);
+    if (result != MA_SUCCESS) {
+        printf("Failed to load menu music file.\n");
+        ma_decoder_uninit(&decoder_game);
+        ma_decoder_uninit(&decoder_win);
+        return -1;
+    }
+
+    currentDecoder = &decoder_game; // Start with game music
+
     // Configure playback device
     deviceConfig = ma_device_config_init(ma_device_type_playback);
-    deviceConfig.playback.format   = decoder.outputFormat;
-    deviceConfig.playback.channels = decoder.outputChannels;
-    deviceConfig.sampleRate        = decoder.outputSampleRate;
+    deviceConfig.playback.format   = currentDecoder->outputFormat;
+    deviceConfig.playback.channels = currentDecoder->outputChannels;
+    deviceConfig.sampleRate        = currentDecoder->outputSampleRate;
     deviceConfig.dataCallback      = data_callback;
-    deviceConfig.pUserData         = &decoder;
+    deviceConfig.pUserData         = currentDecoder;
 
     // Initialize the playback device
     result = ma_device_init(NULL, &deviceConfig, &device);
     if (result != MA_SUCCESS) {
         printf("Failed to initialize playback device.\n");
-        ma_decoder_uninit(&decoder);
+        ma_decoder_uninit(&decoder_game);
+        ma_decoder_uninit(&decoder_win);
+        ma_decoder_uninit(&decoder_menu);
         return -1;
     }
 
@@ -608,7 +631,9 @@ int main(int argc, char* argv[])
     if (result != MA_SUCCESS) {
         printf("Failed to start playback device.\n");
         ma_device_uninit(&device);
-        ma_decoder_uninit(&decoder);
+        ma_decoder_uninit(&decoder_game);
+        ma_decoder_uninit(&decoder_win);
+        ma_decoder_uninit(&decoder_menu);
         return -1;
     }
 
@@ -671,6 +696,20 @@ int main(int argc, char* argv[])
                 {
                     current_game_state = GAME;
                     g_ZerokeyPressed = false;
+                    currentDecoder = &decoder_game;
+                    ma_device_uninit(&device);
+                    ma_decoder_seek_to_pcm_frame(currentDecoder, 0);
+                    deviceConfig.pUserData = currentDecoder;
+                    result = ma_device_init(NULL, &deviceConfig, &device);
+                    if (result != MA_SUCCESS) 
+                    {
+                        printf("Failed to reinitialize playback device.\n");
+                    }
+                    result = ma_device_start(&device);
+                    if (result != MA_SUCCESS) 
+                    {
+                        printf("Failed to start playback device.\n");
+                    }
                 }
                 glfwPollEvents();
                 break;
@@ -1129,11 +1168,40 @@ int main(int argc, char* argv[])
                     ma_sound_start(&ending_sound);
                     listened_to_lore[3] = true;
                     current_game_state = WIN;
+                    currentDecoder = &decoder_win;
+                    ma_device_uninit(&device);
+                    ma_decoder_seek_to_pcm_frame(currentDecoder, 0);
+                    deviceConfig.pUserData = currentDecoder;
+                    result = ma_device_init(NULL, &deviceConfig, &device);
+                    if (result != MA_SUCCESS) 
+                    {
+                        printf("Failed to reinitialize playback device.\n");
+                    }
+                    result = ma_device_start(&device);
+                    if (result != MA_SUCCESS) 
+                    {
+                        printf("Failed to start playback device.\n");
+                    }
+
                 }
                 else if(g_ZerokeyPressed && (listened_to_lore[3] || mode == CHEAT_MODE))
                 {
                     current_game_state = WIN;
                     g_ZerokeyPressed = false;
+                    currentDecoder = &decoder_win;
+                    ma_device_uninit(&device);
+                    ma_decoder_seek_to_pcm_frame(currentDecoder, 0);
+                    deviceConfig.pUserData = currentDecoder;
+                    result = ma_device_init(NULL, &deviceConfig, &device);
+                    if (result != MA_SUCCESS) 
+                    {
+                        printf("Failed to reinitialize playback device.\n");
+                    }
+                    result = ma_device_start(&device);
+                    if (result != MA_SUCCESS) 
+                    {
+                        printf("Failed to start playback device.\n");
+                    }
                 }
 
 
@@ -1156,7 +1224,9 @@ int main(int argc, char* argv[])
         }
     }
     ma_device_uninit(&device);
-    ma_decoder_uninit(&decoder);
+    ma_decoder_uninit(&decoder_game);
+    ma_decoder_uninit(&decoder_win);
+    ma_decoder_uninit(&decoder_menu);
     ma_sound_uninit(&slime_jump_sound);
     ma_sound_uninit(&step_sound);
     ma_sound_uninit(&jump_sound);
