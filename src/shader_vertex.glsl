@@ -23,6 +23,9 @@ out vec4 position_model;
 out vec4 normal;
 out vec2 texcoords;
 
+uniform vec4 light_position;
+out vec4 color_v;
+
 void main()
 {
     // A variável gl_Position define a posição final de cada vértice
@@ -66,5 +69,11 @@ void main()
 
   
     texcoords = texture_coefficients * vec2(tiling_factor.x, tiling_factor.y);
+
+    //Gouraud
+    vec4 l = normalize(light_position - position_world);
+    vec4 n = normalize(normal);
+    float lambert = max(0, dot(n, l));
+    color_v = vec4(lambert, lambert, lambert, 1.0); 
 }
 

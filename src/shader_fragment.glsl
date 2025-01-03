@@ -13,6 +13,9 @@ in vec4 position_model;
 // Coordenadas de textura obtidas do arquivo OBJ (se existirem!)
 in vec2 texcoords;
 
+
+in vec4 color_v;
+
 // Matrizes computadas no código C++ e enviadas para a GPU
 uniform mat4 model;
 uniform mat4 view;
@@ -549,13 +552,8 @@ void main()
         V = texcoords.y;
 
         vec3 Kd0 = texture(god, vec2(U,V)).rgb;
-
-        float lambert = max(0,dot(n,l));
-
-        color.rgb = Kd0 * (lambert + 0.01);
-        color.a = 1;
-
-        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+        color = color_v;
+        color.rgb = Kd0 * 0.7f + color.rgb * 0.3f;
     }
     else if (object_id == -1) 
     {

@@ -1,3 +1,3 @@
-C:/Users/tvpre/OneDrive/Documents/code/CreatureRancher/build/CMakeFiles/main.dir
-C:/Users/tvpre/OneDrive/Documents/code/CreatureRancher/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/tvpre/OneDrive/Documents/code/CreatureRancher/build/CMakeFiles/ZERO_CHECK.dir
+C:/Users/augus/Desktop/CreatureRancher/build/CMakeFiles/main.dir
+C:/Users/augus/Desktop/CreatureRancher/build/CMakeFiles/edit_cache.dir
+C:/Users/augus/Desktop/CreatureRancher/build/CMakeFiles/rebuild_cache.dir
