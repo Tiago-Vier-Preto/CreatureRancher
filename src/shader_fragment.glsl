@@ -32,6 +32,7 @@ uniform mat4 projection;
 #define WATER_SLIME 10
 #define SKYBOX  11
 #define WEAPON 12
+#define HEAVEN_SKYBOX 29
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -74,6 +75,9 @@ uniform sampler2D TextureImage25;
 uniform sampler2D TextureImage26;
 uniform sampler2D TextureImage27;
 uniform sampler2D TextureImage28;
+
+uniform samplerCube heaven_skybox;
+
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
 
@@ -526,6 +530,16 @@ void main()
 
         color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
     }
+    else if (object_id == HEAVEN_SKYBOX)
+    {
+        vec3 direction = normalize(vec3(texcoords, 1.0)); // Ajuste conforme necessário para obter a direção correta
+
+        vec3 Kd0 = texture(heaven_skybox, vec3(position_model[0], position_model[1], position_model[2])).rgb;
+
+        color.rgb = Kd0;
+        
+        color.rgb = pow(color.rgb, vec3(1.0, 1.0, 1.0) / 2.2);
+    }
     else if (object_id == -1) 
     {
         color.rgb = vec3(1.0, 0.0, 0.0);
@@ -538,4 +552,3 @@ void main()
     }
 
 } 
-
