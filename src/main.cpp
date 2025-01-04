@@ -513,6 +513,17 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    // Load Fail sound effect
+    file_path = "../../data/sfx/fail.wav";
+    ma_sound fail_sound;
+    result_sfx = ma_sound_init_from_file(&engine, file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &fail_sound);
+    if (result_sfx != MA_SUCCESS)
+    {
+        printf("Failed to load goodbye sound: %d\n", result_sfx);
+        ma_engine_uninit(&engine);
+        return -1;
+    }
+
     // Definimos a função de callback que será chamada sempre que o usuário
     // pressionar alguma tecla do teclado ...
     glfwSetKeyCallback(window, KeyCallback);
@@ -1048,6 +1059,11 @@ int main(int argc, char* argv[])
                         }
                         movement_speed_level++;
                     }
+                    else
+                    {
+                        ma_sound_seek_to_pcm_frame(&fail_sound, 0.0);
+                        ma_sound_start(&fail_sound);
+                    }
                     g_OnekeyPressed = false;
                 }
 
@@ -1071,6 +1087,11 @@ int main(int argc, char* argv[])
                             balance[pair.first] -= pair.second[stamina_level];
                         }
                         stamina_level++;
+                    }
+                    else
+                    {
+                        ma_sound_seek_to_pcm_frame(&fail_sound, 0.0);
+                        ma_sound_start(&fail_sound);
                     }
                     g_TwokeyPressed = false;
                 }
@@ -1096,6 +1117,11 @@ int main(int argc, char* argv[])
                         }
                         slime_spawn_rate_level++;
                     }
+                    else
+                    {
+                        ma_sound_seek_to_pcm_frame(&fail_sound, 0.0);
+                        ma_sound_start(&fail_sound);
+                    }
                     g_ThreekeyPressed = false;
                 }
 
@@ -1120,6 +1146,11 @@ int main(int argc, char* argv[])
                         }
                         inventory_level++;
                     }
+                    else
+                    {
+                        ma_sound_seek_to_pcm_frame(&fail_sound, 0.0);
+                        ma_sound_start(&fail_sound);
+                    }
                     g_FourkeyPressed = false;
                 }
 
@@ -1143,6 +1174,11 @@ int main(int argc, char* argv[])
                             balance[pair.first] -= pair.second[lore_progress_level];
                         }
                         lore_progress_level++;
+                    }
+                    else
+                    {
+                        ma_sound_seek_to_pcm_frame(&fail_sound, 0.0);
+                        ma_sound_start(&fail_sound);
                     }
                     g_FivekeyPressed = false;
                 }
@@ -1389,13 +1425,17 @@ int main(int argc, char* argv[])
                 }
 
                 // Atualizamos a posição da câmera utilizando as teclas W, A, S, D
+                // Ajustar w_vector para ignorar a componente verical (y)
+                glm::vec4 w_vector_flat = w_vector;
+                w_vector_flat.y = 0.0f;
+                w_vector_flat = w_vector_flat / norm(w_vector_flat);
                 bool playerMoved = false;
                 if (g_WkeyPressed) {
-                    camera_position_c += -w_vector * speed * delta_t;
+                    camera_position_c += -w_vector_flat * speed * delta_t;
                     playerMoved = true;
                 }
                 if (g_SkeyPressed) {
-                    camera_position_c += w_vector * speed * delta_t;
+                    camera_position_c += w_vector_flat  * speed * delta_t;
                     playerMoved = true;
                 }
                 if (g_AkeyPressed) {
