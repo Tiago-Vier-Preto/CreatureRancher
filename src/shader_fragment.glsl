@@ -40,6 +40,7 @@ uniform mat4 projection;
 #define MENU 31
 #define CONTROLS 32
 #define UPGRADES 33
+#define STORE_MONSTER 34
 
 uniform int object_id;
 
@@ -89,10 +90,10 @@ uniform samplerCube heaven_skybox;
 uniform sampler2D god;
 
 uniform sampler2D menu;
-
 uniform sampler2D controls;
-
 uniform sampler2D upgrades;
+
+uniform sampler2D store_monster;
 
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
@@ -600,6 +601,15 @@ void main()
         color.a = 1;
 
         color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == STORE_MONSTER)
+    {
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(store_monster, vec2(U,V)).rgb;
+        color = color_v;
+        color.rgb = Kd0 * 0.7f + color.rgb * 0.3f;
     }
     else if (object_id == -1) 
     {

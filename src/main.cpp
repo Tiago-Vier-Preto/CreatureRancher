@@ -610,6 +610,9 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../data/menu/menu.png"); // 31
     LoadTextureImage("../../data/menu/controls.jpg"); // 32
     LoadTextureImage("../../data/upgrades/upgrades.png"); // 33
+
+    LoadTextureImage("../../data/store-monster/store-monster.png"); // 34
+
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel planemodel("../../data/plane.obj");
     ComputeNormals(&planemodel);
@@ -666,6 +669,10 @@ int main(int argc, char* argv[])
     ObjModel menu("../../data/menu/menu.obj");
     ComputeNormals(&menu);
     BuildTrianglesAndAddToVirtualScene(&menu);
+
+    ObjModel store_monster("../../data/store-monster/store-monster.obj");
+    ComputeNormals(&store_monster);
+    BuildTrianglesAndAddToVirtualScene(&store_monster);
 
     if ( argc > 1 )
     {
@@ -1016,6 +1023,127 @@ int main(int argc, char* argv[])
                 }
                 TextRendering_PrintString(window, "Balance: " + constructed_string, x, start_y - line_spacing * 11, scale);
                 TextRendering_ShowFramesPerSecond(window);
+
+                //Purchase Logic
+                if (g_OnekeyPressed && movement_speed_level < 3) 
+                {
+                    bool canAfford = true;
+                    for (const auto& pair : movement_speed_costs) 
+                    {
+                        if (balance[pair.first] < pair.second[movement_speed_level]) 
+                        {
+                            canAfford = false;
+                            break;
+                        }
+                    }
+                    if (canAfford) 
+                    {
+                        ma_sound_seek_to_pcm_frame(&buy_sound, 0.0);
+                        ma_sound_start(&buy_sound);
+                        for (const auto& pair : movement_speed_costs) 
+                        {
+                            balance[pair.first] -= pair.second[movement_speed_level];
+                        }
+                        movement_speed_level++;
+                    }
+                    g_OnekeyPressed = false;
+                }
+
+                if (g_TwokeyPressed && stamina_level < 3) 
+                {
+                    bool canAfford = true;
+                    for (const auto& pair : stamina_costs) 
+                    {
+                        if (balance[pair.first] < pair.second[stamina_level]) 
+                        {
+                            canAfford = false;
+                            break;
+                        }
+                    }
+                    if (canAfford) 
+                    {
+                        ma_sound_seek_to_pcm_frame(&buy_sound, 0.0);
+                        ma_sound_start(&buy_sound);
+                        for (const auto& pair : stamina_costs) 
+                        {
+                            balance[pair.first] -= pair.second[stamina_level];
+                        }
+                        stamina_level++;
+                    }
+                    g_TwokeyPressed = false;
+                }
+
+                if (g_ThreekeyPressed && slime_spawn_rate_level < 3) 
+                {
+                    bool canAfford = true;
+                    for (const auto& pair : slime_spawn_rate_costs) 
+                    {
+                        if (balance[pair.first] < pair.second[slime_spawn_rate_level]) 
+                        {
+                            canAfford = false;
+                            break;
+                        }
+                    }
+                    if (canAfford) 
+                    {
+                        ma_sound_seek_to_pcm_frame(&buy_sound, 0.0);
+                        ma_sound_start(&buy_sound);
+                        for (const auto& pair : slime_spawn_rate_costs) 
+                        {
+                            balance[pair.first] -= pair.second[slime_spawn_rate_level];
+                        }
+                        slime_spawn_rate_level++;
+                    }
+                    g_ThreekeyPressed = false;
+                }
+
+                if (g_FourkeyPressed && inventory_level < 3) 
+                {
+                    bool canAfford = true;
+                    for (const auto& pair : inventory_costs) 
+                    {
+                        if (balance[pair.first] < pair.second[inventory_level]) 
+                        {
+                            canAfford = false;
+                            break;
+                        }
+                    }
+                    if (canAfford) 
+                    {
+                        ma_sound_seek_to_pcm_frame(&buy_sound, 0.0);
+                        ma_sound_start(&buy_sound);
+                        for (const auto& pair : inventory_costs) 
+                        {
+                            balance[pair.first] -= pair.second[inventory_level];
+                        }
+                        inventory_level++;
+                    }
+                    g_FourkeyPressed = false;
+                }
+
+                if (g_FivekeyPressed && lore_progress_level < 3) 
+                {
+                    bool canAfford = true;
+                    for (const auto& pair : lore_progress_costs) 
+                    {
+                        if (balance[pair.first] < pair.second[lore_progress_level]) 
+                        {
+                            canAfford = false;
+                            break;
+                        }
+                    }
+                    if (canAfford) 
+                    {
+                        ma_sound_seek_to_pcm_frame(&buy_sound, 0);
+                        ma_sound_start(&buy_sound);
+                        for (const auto& pair : lore_progress_costs) 
+                        {
+                            balance[pair.first] -= pair.second[lore_progress_level];
+                        }
+                        lore_progress_level++;
+                    }
+                    g_FivekeyPressed = false;
+                }
                 glfwSwapBuffers(window);
                 glfwPollEvents();
                 break;
@@ -1312,6 +1440,7 @@ int main(int argc, char* argv[])
                 #define CUBE     11
                 #define WEAPON   12
                 #define PRIMEIRO_PLANO 20
+                #define STORE_MONSTER 34
                 // Desenhamos o plano do chão
                 for(int i = 0; i < 9; i++)
                 {
@@ -1555,28 +1684,28 @@ int main(int argc, char* argv[])
                 TextRendering_ShowFramesPerSecond(window);
 
                 //Lore audio
-                if(((!listened_to_lore[0] && lore_progress_level == 0) || (g_OnekeyPressed && (mode == CHEAT_MODE || listened_to_lore[0])))
+                if(((!listened_to_lore[0] && lore_progress_level >= 0) || (g_OnekeyPressed && (mode == CHEAT_MODE || listened_to_lore[0])))
                 && (!ma_sound_is_playing(&lore2_sound) && !ma_sound_is_playing(&lore3_sound) && !ma_sound_is_playing(&ending_sound)))
                 {
                     ma_sound_set_volume(&lore1_sound, 1.5f);
                     ma_sound_start(&lore1_sound);
                     listened_to_lore[0] = true;
                 }
-                else if(((!listened_to_lore[1] && lore_progress_level == 1) || (g_TwokeyPressed && (mode == CHEAT_MODE || listened_to_lore[1])))
+                else if(((!listened_to_lore[1] && lore_progress_level >= 1) || (g_TwokeyPressed && (mode == CHEAT_MODE || listened_to_lore[1])))
                 && (!ma_sound_is_playing(&lore1_sound) && !ma_sound_is_playing(&lore3_sound) && !ma_sound_is_playing(&ending_sound)))
                 {
                     ma_sound_set_volume(&lore2_sound, 1.5f);
                     ma_sound_start(&lore2_sound);
                     listened_to_lore[1] = true;
                 }
-                else if(((!listened_to_lore[2] && lore_progress_level == 2) || (g_ThreekeyPressed && (mode == CHEAT_MODE || listened_to_lore[2])))
+                else if(((!listened_to_lore[2] && lore_progress_level >= 2) || (g_ThreekeyPressed && (mode == CHEAT_MODE || listened_to_lore[2])))
                  && (!ma_sound_is_playing(&lore1_sound) && !ma_sound_is_playing(&lore2_sound) && !ma_sound_is_playing(&ending_sound)))
                 {
                     ma_sound_set_volume(&lore3_sound, 1.5f);
                     ma_sound_start(&lore3_sound);
                     listened_to_lore[2] = true;
                 }
-                else if(((!listened_to_lore[3] && lore_progress_level == 3) || (g_FourkeyPressed && (mode == CHEAT_MODE || listened_to_lore[3])))
+                else if(((!listened_to_lore[3] && lore_progress_level >= 3) || (g_FourkeyPressed && (mode == CHEAT_MODE || listened_to_lore[3])))
                  && (!ma_sound_is_playing(&lore1_sound) && !ma_sound_is_playing(&lore2_sound) && !ma_sound_is_playing(&lore3_sound)))
                 {
                     ma_sound_set_volume(&ending_sound, 1.5f);
@@ -1867,6 +1996,7 @@ void LoadShadersFromFiles()
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "menu"), 32);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "controls"), 33);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "upgrades"), 34);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "store_monster"), 35);
     glUseProgram(0);
 }
 
