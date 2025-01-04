@@ -4,8 +4,8 @@
 #include <glm/vec4.hpp>
 #include <vector>
 #include <string>
-#define SLIME_SPAWN_TIME 8.0f
-#define SLIME_LIMIT 500
+#define SLIME_SPAWN_TIME 10.0f
+#define SLIME_LIMIT 1000
 #define STARTING_SLIMES 100
 class Creature {
 public:

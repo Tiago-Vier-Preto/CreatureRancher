@@ -52,7 +52,7 @@
 #define CHEAT_MODE false
 #define START_MODE NORMAL_MODE
 #define DEFAULT_INVENTORY_SIZE 4
-#define DEFAULT_STAMINA 5.0f
+#define DEFAULT_STAMINA 10.0f
 // Estrutura que representa um modelo geométrico carregado a partir de um
 // arquivo ".obj". Veja https://en.wikipedia.org/wiki/Wavefront_.obj_file .
 struct ObjModel
@@ -519,7 +519,29 @@ int main(int argc, char* argv[])
     result_sfx = ma_sound_init_from_file(&engine, file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &fail_sound);
     if (result_sfx != MA_SUCCESS)
     {
-        printf("Failed to load goodbye sound: %d\n", result_sfx);
+        printf("Failed to load fail sound: %d\n", result_sfx);
+        ma_engine_uninit(&engine);
+        return -1;
+    }
+
+    // Load Pickup sound effect
+    file_path = "../../data/sfx/pickup.wav";
+    ma_sound pickup_sound;
+    result_sfx = ma_sound_init_from_file(&engine, file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &pickup_sound);
+    if (result_sfx != MA_SUCCESS)
+    {
+        printf("Failed to load pickup sound: %d\n", result_sfx);
+        ma_engine_uninit(&engine);
+        return -1;
+    }
+
+    // Load Kill sound effect
+    file_path = "../../data/sfx/kill.wav";
+    ma_sound kill_sound;
+    result_sfx = ma_sound_init_from_file(&engine, file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &kill_sound);
+    if (result_sfx != MA_SUCCESS)
+    {
+        printf("Failed to load kill sound: %d\n", result_sfx);
         ma_engine_uninit(&engine);
         return -1;
     }
@@ -1368,9 +1390,9 @@ int main(int argc, char* argv[])
                 {
                     stamina_counter += delta_t;
                     speed = NORMAL_SPEED + float(movement_speed_level);
-                    if(stamina_counter > DEFAULT_STAMINA + stamina_level)
+                    if(stamina_counter > DEFAULT_STAMINA + stamina_level * 3)
                     {
-                        stamina_counter = DEFAULT_STAMINA + stamina_level;
+                        stamina_counter = DEFAULT_STAMINA + stamina_level * 3;
                     }
                 }
 
@@ -1404,7 +1426,7 @@ int main(int argc, char* argv[])
                     ma_sound_set_volume(&slime_jump_sound, maxVolume);
                     ma_sound_start(&slime_jump_sound);
                 }
-                if ((slime_spawn_timer >= std::max((SLIME_SPAWN_TIME - float(slime_spawn_rate_level)), 1.0f)) && slime_count < SLIME_LIMIT) {
+                if ((slime_spawn_timer >= std::max((SLIME_SPAWN_TIME - float(slime_spawn_rate_level) * 2), 1.0f)) && slime_count < SLIME_LIMIT) {
                     // Reset the spawn timer
                     slime_spawn_timer = 0.0f;
 
@@ -1600,7 +1622,10 @@ int main(int argc, char* argv[])
                     }
                 }
 
-                for (const auto& creature : creatures) {
+
+                int inventory_size = inventory.size();
+                for (auto it = creatures.begin(); it != creatures.end(); ++it) {
+                    auto& creature = *it;
                     glm::vec4 position = creature->GetPosition();
                     float rotation_angle = creature->GetRotationAngle();
 
@@ -1623,6 +1648,20 @@ int main(int argc, char* argv[])
                             if (captureTime >= 1.0f) {
                                 captureTime = 0.0f;  // Resetando o tempo de captura
                                 position = glm::vec4(end, 1.0f); // Finaliza no centro da arma
+                                if (inventory_size < DEFAULT_INVENTORY_SIZE + inventory_level)
+                                {
+                                    ma_sound_start(&pickup_sound);
+                                    Slime_Type type = Slime_Type(creature->GetType());
+                                    inventory.push_back(type);
+                                    it = creatures.erase(it); 
+                                    continue;
+                                }
+                                else
+                                {
+                                    ma_sound_start(&kill_sound);
+                                    it = creatures.erase(it);
+                                    continue;
+                                }
                             }
 
                             lastPosition = position;  // Atualiza a posição final durante o movimento
@@ -1750,6 +1789,13 @@ int main(int argc, char* argv[])
                 glUniform1i(g_object_id_uniform, CUBE);
                 glUniform2f(tilingLocation, 1.0f, 1.0f);
                 DrawVirtualObject("cube");
+
+                std::string constructed_string = "Inventory: Capacity: " + std::to_string(DEFAULT_INVENTORY_SIZE + inventory_level) + ", Size: " + std::to_string(inventory_size) + ", Items: ";
+                for(const auto& slime : inventory) 
+                {
+                    constructed_string += to_string(slime) + ", ";
+                }
+                TextRendering_PrintString(window, constructed_string, -0.99f, -0.95, 1.5f);
 
                 // Imprimimos na tela informação sobre o número de quadros renderizados
                 // por segundo (frames per second).
