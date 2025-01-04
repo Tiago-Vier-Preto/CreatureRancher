@@ -2,7 +2,22 @@
 
 #ifndef SLIME_TYPES_HPP
 #define SLIME_TYPES_HPP
-enum Slime_Type {ANEMO, CRYO, DENDRO, ELECTRO, FIRE, GEO, MUTATED_ELECTRO, WATER};
+enum Slime_Type {ANEMO, CRYO, DENDRO, PLASMA, FIRE, GEO, ELECTRO, WATER};
+inline std::string to_string(Slime_Type t)
+{
+    switch (t)
+    {
+        case ANEMO:   return "Anemo";
+        case CRYO:    return "Cryo";
+        case DENDRO:  return "Dendro";
+        case PLASMA:  return "Plasma";
+        case FIRE:    return "Fire";
+        case GEO:     return "Geo";
+        case ELECTRO: return "Electro";
+        case WATER:   return "Water";
+        default:      return "Invalid Slime Type";
+    }
+}
 
 class Anemo_Slime: public Creature {
     public:
@@ -22,9 +37,9 @@ class Dendro_Slime: public Creature {
         int GetType() const override;
 };
 
-class Electro_Slime: public Creature {
+class Plasma_Slime: public Creature {
     public:
-        Electro_Slime(float x, float y, float z);
+        Plasma_Slime(float x, float y, float z);
         int GetType() const override;
 };
 
@@ -40,9 +55,9 @@ class Geo_Slime: public Creature {
         int GetType() const override;
 };
 
-class Mutated_Electro_Slime: public Creature {
+class Electro_Slime: public Creature {
     public:
-        Mutated_Electro_Slime(float x, float y, float z);
+        Electro_Slime(float x, float y, float z);
         int GetType() const override;
 };
 

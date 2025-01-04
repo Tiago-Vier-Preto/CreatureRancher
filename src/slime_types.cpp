@@ -26,11 +26,11 @@ int Dendro_Slime::GetType() const {
     return DENDRO;
 }
 
-Electro_Slime::Electro_Slime(float x, float y, float z) : Creature(x, y, z, 4.0f, 1.0f, -9.81f){
+Plasma_Slime::Plasma_Slime(float x, float y, float z) : Creature(x, y, z, 4.0f, 1.0f, -9.81f){
 };
 
-int Electro_Slime::GetType() const {
-    return ELECTRO;
+int Plasma_Slime::GetType() const {
+    return PLASMA;
 }
 
 Fire_Slime::Fire_Slime(float x, float y, float z) : Creature(x, y, z, 6.0f, 0.75f, -8.81f){
@@ -47,11 +47,11 @@ int Geo_Slime::GetType() const {
     return GEO;
 }
 
-Mutated_Electro_Slime::Mutated_Electro_Slime(float x, float y, float z) : Creature(x, y, z, 3.0f, 1.5f, -9.81f){
+Electro_Slime::Electro_Slime(float x, float y, float z) : Creature(x, y, z, 3.0f, 1.5f, -9.81f){
 };
 
-int Mutated_Electro_Slime::GetType() const {
-    return MUTATED_ELECTRO;
+int Electro_Slime::GetType() const {
+    return ELECTRO;
 }
 Water_Slime::Water_Slime(float x, float y, float z) : Creature(x, y, z, 4.5f, 0.75f, -9.81f){
 };
@@ -86,7 +86,7 @@ std::vector<Creature*> InitialCreatureSpawn(int count, float map_width, float ma
             case DENDRO:
                 tile = 2;
                 break;
-            case ELECTRO:
+            case PLASMA:
                 tile = 3;
                 break;
             case FIRE:
@@ -95,7 +95,7 @@ std::vector<Creature*> InitialCreatureSpawn(int count, float map_width, float ma
             case GEO:
                 tile = 6;
                 break;
-            case MUTATED_ELECTRO:
+            case ELECTRO:
                 tile = 7;
                 break;
             case WATER:
@@ -130,8 +130,8 @@ std::vector<Creature*> InitialCreatureSpawn(int count, float map_width, float ma
             case DENDRO:
                 new_creature = new Dendro_Slime(x, Creature::GROUND_LEVEL, z);
                 break;
-            case ELECTRO:
-                new_creature = new Electro_Slime(x, Creature::GROUND_LEVEL, z);
+            case PLASMA:
+                new_creature = new Plasma_Slime(x, Creature::GROUND_LEVEL, z);
                 break;
             case FIRE:
                 new_creature = new Fire_Slime(x, Creature::GROUND_LEVEL, z);
@@ -139,8 +139,8 @@ std::vector<Creature*> InitialCreatureSpawn(int count, float map_width, float ma
             case GEO:
                 new_creature = new Geo_Slime(x, Creature::GROUND_LEVEL, z);
                 break;
-            case MUTATED_ELECTRO:
-                new_creature = new Mutated_Electro_Slime(x, Creature::GROUND_LEVEL, z);
+            case ELECTRO:
+                new_creature = new Electro_Slime(x, Creature::GROUND_LEVEL, z);
                 break;
             case WATER:
                 new_creature = new Water_Slime(x, Creature::GROUND_LEVEL, z);
@@ -178,7 +178,7 @@ Creature* SpawnCreature(float map_width, float map_length, std::vector<Creature*
         case DENDRO:
             tile = 2;
             break;
-        case ELECTRO:
+        case PLASMA:
             tile = 3;
             break;
         case FIRE:
@@ -187,7 +187,7 @@ Creature* SpawnCreature(float map_width, float map_length, std::vector<Creature*
         case GEO:
             tile = 6;
             break;
-        case MUTATED_ELECTRO:
+        case ELECTRO:
             tile = 7;
             break;
         case WATER:
@@ -222,8 +222,8 @@ Creature* SpawnCreature(float map_width, float map_length, std::vector<Creature*
         case DENDRO:
             creature = new Dendro_Slime(x, Creature::GROUND_LEVEL, z);
             break;
-        case ELECTRO:
-            creature = new Electro_Slime(x, Creature::GROUND_LEVEL, z);
+        case PLASMA:
+            creature = new Plasma_Slime(x, Creature::GROUND_LEVEL, z);
             break;
         case FIRE:
             creature = new Fire_Slime(x, Creature::GROUND_LEVEL, z);
@@ -231,8 +231,8 @@ Creature* SpawnCreature(float map_width, float map_length, std::vector<Creature*
         case GEO:
             creature = new Geo_Slime(x, Creature::GROUND_LEVEL, z);
             break;
-        case MUTATED_ELECTRO:
-            creature = new Mutated_Electro_Slime(x, Creature::GROUND_LEVEL, z);
+        case ELECTRO:
+            creature = new Electro_Slime(x, Creature::GROUND_LEVEL, z);
             break;
         case WATER:
             creature = new Water_Slime(x, Creature::GROUND_LEVEL, z);

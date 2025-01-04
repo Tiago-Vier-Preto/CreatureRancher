@@ -28,10 +28,10 @@ uniform mat4 projection;
 #define ANEMO_SLIME 3
 #define CRYO_SLIME 4
 #define DENDRO_SLIME 5
-#define ELECTRO_SLIME 6
+#define PLASMA_SLIME 6
 #define FIRE_SLIME 7
 #define GEO_SLIME 8
-#define MUTATED_ELECTRO_SLIME 9
+#define ELECTRO_SLIME 9
 #define WATER_SLIME 10
 #define SKYBOX  11
 #define WEAPON 12
@@ -56,10 +56,10 @@ uniform sampler2D TextureImage2;
 uniform sampler2D anemo;
 uniform sampler2D cryo;
 uniform sampler2D dendro;
-uniform sampler2D electro;
+uniform sampler2D plasma;
 uniform sampler2D fire;
 uniform sampler2D geo;
-uniform sampler2D mutated_electro;
+uniform sampler2D electro;
 uniform sampler2D water;
 
 uniform samplerCube skybox; // Skybox
@@ -267,13 +267,13 @@ void main()
 
         color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
     }
-    else if (object_id == ELECTRO_SLIME)
+    else if (object_id == PLASMA_SLIME)
     {
         // Coordenadas de textura do plano, obtidas do arquivo OBJ.
         U = texcoords.x;
         V = texcoords.y;
 
-        vec3 Kd0 = texture(electro, vec2(U,V)).rgb;
+        vec3 Kd0 = texture(plasma, vec2(U,V)).rgb;
 
         float lambert = max(0,dot(n,l));
 
@@ -312,13 +312,13 @@ void main()
 
         color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
     }
-    else if (object_id == MUTATED_ELECTRO_SLIME)
+    else if (object_id == ELECTRO_SLIME)
     {
         // Coordenadas de textura do plano, obtidas do arquivo OBJ.
         U = texcoords.x;
         V = texcoords.y;
 
-        vec3 Kd0 = texture(mutated_electro, vec2(U,V)).rgb;
+        vec3 Kd0 = texture(electro, vec2(U,V)).rgb;
 
         float lambert = max(0,dot(n,l));
 

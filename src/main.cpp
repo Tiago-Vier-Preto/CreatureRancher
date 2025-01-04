@@ -48,9 +48,9 @@
 #define map_length 300.0f
 #define map_height 300.0f
 #define M_PI 3.141592653589793238462643383279502884L
-#define NORMAL_MODE false
+#define NORMAL_MODE true
 #define CHEAT_MODE false
-#define START_MODE CHEAT_MODE
+#define START_MODE NORMAL_MODE
 
 // Estrutura que representa um modelo geométrico carregado a partir de um
 // arquivo ".obj". Veja https://en.wikipedia.org/wiki/Wavefront_.obj_file .
@@ -258,7 +258,7 @@ const float JUMP_VELOCITY = 5.0f; // Initial velocity for the jump
 
 bool g_IsSprinting = false;
 const float NORMAL_SPEED = 5.0f;
-const float SPRINT_SPEED = 10.0f;
+const float SPRINT_BONUS = 5.0f;
 
 enum GameState{GAME, MAIN_MENU, WIN, UPGRADE};
 
@@ -379,10 +379,11 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    const char* file_path;
     //Load Slime Jump sound effect
-    const char* slime_jump_file_path = "../../data/sfx/slime_jump.wav";
+    file_path = "../../data/sfx/slime_jump.wav";
     ma_sound slime_jump_sound;
-    result_sfx = ma_sound_init_from_file(&engine, slime_jump_file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &slime_jump_sound);
+    result_sfx = ma_sound_init_from_file(&engine, file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &slime_jump_sound);
     if (result_sfx != MA_SUCCESS)
     {
         printf("Failed to load jump sound: %d\n", result_sfx);
@@ -391,9 +392,9 @@ int main(int argc, char* argv[])
     }
 
     // Load Step sound effect
-    const char* step_file_path = "../../data/sfx/step.wav";
+    file_path = "../../data/sfx/step.wav";
     ma_sound step_sound;
-    result_sfx = ma_sound_init_from_file(&engine, step_file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &step_sound);
+    result_sfx = ma_sound_init_from_file(&engine, file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &step_sound);
     if (result_sfx != MA_SUCCESS)
     {
         printf("Failed to load step sound: %d\n", result_sfx);
@@ -402,9 +403,9 @@ int main(int argc, char* argv[])
     }
 
     // Load Jump sound effect
-    const char* jump_file_path = "../../data/sfx/jump.wav";
+    file_path = "../../data/sfx/jump.wav";
     ma_sound jump_sound;
-    result_sfx = ma_sound_init_from_file(&engine, jump_file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &jump_sound);
+    result_sfx = ma_sound_init_from_file(&engine, file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &jump_sound);
     if (result_sfx != MA_SUCCESS)
     {
         printf("Failed to load jump sound: %d\n", result_sfx);
@@ -413,9 +414,9 @@ int main(int argc, char* argv[])
     }
 
     // Load Suction sound effect
-    const char* suction_file_path = "../../data/sfx/suction.wav";
+    file_path = "../../data/sfx/suction.wav";
     ma_sound suction_sound;
-    result_sfx = ma_sound_init_from_file(&engine, suction_file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &suction_sound);
+    result_sfx = ma_sound_init_from_file(&engine, file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &suction_sound);
     if (result_sfx != MA_SUCCESS)
     {
         printf("Failed to load jump sound: %d\n", result_sfx);
@@ -424,9 +425,9 @@ int main(int argc, char* argv[])
     }
 
     // Load Lore1 sound effect
-    const char* lore1_file_path = "../../data/sfx/lore1.wav";
+    file_path = "../../data/sfx/lore1.wav";
     ma_sound lore1_sound;
-    result_sfx = ma_sound_init_from_file(&engine, lore1_file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &lore1_sound);
+    result_sfx = ma_sound_init_from_file(&engine, file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &lore1_sound);
     if (result_sfx != MA_SUCCESS)
     {
         printf("Failed to load lore1 sound: %d\n", result_sfx);
@@ -435,9 +436,9 @@ int main(int argc, char* argv[])
     }
 
     // Load Lore2 sound effect
-    const char* lore2_file_path = "../../data/sfx/lore2.wav";
+    file_path = "../../data/sfx/lore2.wav";
     ma_sound lore2_sound;
-    result_sfx = ma_sound_init_from_file(&engine, lore2_file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &lore2_sound);
+    result_sfx = ma_sound_init_from_file(&engine, file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &lore2_sound);
     if (result_sfx != MA_SUCCESS)
     {
         printf("Failed to load lore2 sound: %d\n", result_sfx);
@@ -446,9 +447,9 @@ int main(int argc, char* argv[])
     }
 
     // Load Lore3 sound effect
-    const char* lore3_file_path = "../../data/sfx/lore3.wav";
+    file_path = "../../data/sfx/lore3.wav";
     ma_sound lore3_sound;
-    result_sfx = ma_sound_init_from_file(&engine, lore3_file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &lore3_sound);
+    result_sfx = ma_sound_init_from_file(&engine, file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &lore3_sound);
     if (result_sfx != MA_SUCCESS)
     {
         printf("Failed to load lore3 sound: %d\n", result_sfx);
@@ -457,9 +458,9 @@ int main(int argc, char* argv[])
     }
 
     // Load Ending sound effect
-    const char* ending_file_path = "../../data/sfx/ending.wav";
+    file_path = "../../data/sfx/ending.wav";
     ma_sound ending_sound;
-    result_sfx = ma_sound_init_from_file(&engine, ending_file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &ending_sound);
+    result_sfx = ma_sound_init_from_file(&engine, file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &ending_sound);
     if (result_sfx != MA_SUCCESS)
     {
         printf("Failed to load ending sound: %d\n", result_sfx);
@@ -467,6 +468,49 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    // Load Select sound effect
+    file_path = "../../data/sfx/select.wav";
+    ma_sound select_sound;
+    result_sfx = ma_sound_init_from_file(&engine, file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &select_sound);
+    if (result_sfx != MA_SUCCESS)
+    {
+        printf("Failed to load select sound: %d\n", result_sfx);
+        ma_engine_uninit(&engine);
+        return -1;
+    }
+
+    // Load Buy sound effect
+    file_path = "../../data/sfx/buy.wav";
+    ma_sound buy_sound;
+    result_sfx = ma_sound_init_from_file(&engine, file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &buy_sound);
+    if (result_sfx != MA_SUCCESS)
+    {
+        printf("Failed to load buy sound: %d\n", result_sfx);
+        ma_engine_uninit(&engine);
+        return -1;
+    }
+
+    // Load Welcome sound effect
+    file_path = "../../data/sfx/welcome.wav";
+    ma_sound welcome_sound;
+    result_sfx = ma_sound_init_from_file(&engine, file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &welcome_sound);
+    if (result_sfx != MA_SUCCESS)
+    {
+        printf("Failed to welcome buy sound: %d\n", result_sfx);
+        ma_engine_uninit(&engine);
+        return -1;
+    }
+
+    // Load Goodbye sound effect
+    file_path = "../../data/sfx/goodbye.wav";
+    ma_sound goodbye_sound;
+    result_sfx = ma_sound_init_from_file(&engine, file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &goodbye_sound);
+    if (result_sfx != MA_SUCCESS)
+    {
+        printf("Failed to load goodbye sound: %d\n", result_sfx);
+        ma_engine_uninit(&engine);
+        return -1;
+    }
 
     // Definimos a função de callback que será chamada sempre que o usuário
     // pressionar alguma tecla do teclado ...
@@ -507,10 +551,10 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../data/anemo-slime/textures/bake.png"); // TextureImage3
     LoadTextureImage("../../data/cryo-slime/textures/bake.png"); // TextureImage4
     LoadTextureImage("../../data/dendro-slime/textures/body_bake.png"); // TextureImage5
-    LoadTextureImage("../../data/electro-slime/textures/final_bake.png"); // TextureImage6
+    LoadTextureImage("../../data/plasma-slime/textures/final_bake.png"); // TextureImage6
     LoadTextureImage("../../data/fire-slime/textures/body.png"); // TextureImage7
     LoadTextureImage("../../data/geo-slime/textures/bake.png"); // TextureImage8
-    LoadTextureImage("../../data/mutated-electro-slime/textures/final_bake.png"); // TextureImage9
+    LoadTextureImage("../../data/electro-slime/textures/final_bake.png"); // TextureImage9
     LoadTextureImage("../../data/water-slime/textures/final_bake.001.png"); // TextureImage10
 
     std::vector<std::string> faces
@@ -583,9 +627,9 @@ int main(int argc, char* argv[])
     ComputeNormals(&dendromodel);
     BuildTrianglesAndAddToVirtualScene(&dendromodel);
 
-    ObjModel electromodel("../../data/electro-slime/source/electro.obj");
-    ComputeNormals(&electromodel);
-    BuildTrianglesAndAddToVirtualScene(&electromodel);
+    ObjModel plasmamodel("../../data/plasma-slime/source/plasma.obj");
+    ComputeNormals(&plasmamodel);
+    BuildTrianglesAndAddToVirtualScene(&plasmamodel);
 
     ObjModel firemodel("../../data/fire-slime/source/fire.obj");
     ComputeNormals(&firemodel);
@@ -595,9 +639,9 @@ int main(int argc, char* argv[])
     ComputeNormals(&geomodel);
     BuildTrianglesAndAddToVirtualScene(&geomodel);
 
-    ObjModel mutated_electromodel("../../data/mutated-electro-slime/source/mutated-electro.obj");
-    ComputeNormals(&mutated_electromodel);
-    BuildTrianglesAndAddToVirtualScene(&mutated_electromodel);
+    ObjModel electromodel("../../data/electro-slime/source/electro.obj");
+    ComputeNormals(&electromodel);
+    BuildTrianglesAndAddToVirtualScene(&electromodel);
 
     ObjModel watermodel("../../data/water-slime/source/water.obj");
     ComputeNormals(&watermodel);
@@ -648,8 +692,82 @@ int main(int argc, char* argv[])
     glm::vec4 lastPosition;
     float lastCaptureTime = 0.0f;
 
+    //Player inventory and balance
+    std::map<Slime_Type, int> balance = {
+        {ANEMO, 0},
+        {CRYO, 0},
+        {DENDRO, 0},
+        {PLASMA, 0},
+        {FIRE, 0},
+        {GEO, 0},
+        {ELECTRO, 0},
+        {WATER, 0}
+    };
+    std::vector<Slime_Type> inventory = {};
+
+
+    int movement_speed_level = 0;
+    std::map<Slime_Type, std::vector<int>> movement_speed_costs = {
+    {ANEMO, {0, 2, 5}},
+    {CRYO, {0, 0, 0}},
+    {DENDRO, {0, 0, 0}},
+    {PLASMA, {0, 0, 0}},
+    {FIRE, {0, 0, 0}},
+    {GEO, {0, 0, 0}},
+    {ELECTRO, {2, 3, 5}},
+    {WATER, {0, 0, 0}}
+    };
+
+    int stamina_level = 0;
+    std::map<Slime_Type, std::vector<int>> stamina_costs = {
+    {ANEMO, {0, 0, 0}},
+    {CRYO, {0, 0, 0}},
+    {DENDRO, {0, 0, 0}},
+    {PLASMA, {0, 0, 0}},
+    {FIRE, {2, 3, 5}},
+    {GEO, {0, 2, 5}},
+    {ELECTRO, {0, 0, 0}},
+    {WATER, {0, 0, 0}}
+    };
+
+    int slime_spawn_rate_level = 0;
+    std::map<Slime_Type, std::vector<int>> slime_spawn_rate_costs = {
+    {ANEMO, {0, 0, 0}},
+    {CRYO, {0, 0, 0}},
+    {DENDRO, {0, 2, 5}},
+    {PLASMA, {2, 3, 5}},
+    {FIRE, {0, 0, 0}},
+    {GEO, {0, 0, 0}},
+    {ELECTRO, {0, 0, 0}},
+    {WATER, {0, 2, 5}}
+    };
+
+    int inventory_level = 0;
+    std::map<Slime_Type, std::vector<int>> inventory_costs = {
+    {ANEMO, {0, 0, 0}},
+    {CRYO, {2, 3, 5}},
+    {DENDRO, {0, 0, 0}},
+    {PLASMA, {0, 0, 0}},
+    {FIRE, {0, 0, 0}},
+    {GEO, {0, 0, 0}},
+    {ELECTRO, {0, 0, 0}},
+    {WATER, {0, 2, 5}}
+    };
+
+    int lore_progress_level = 0;
+    std::map<Slime_Type, std::vector<int>> lore_progress_costs = {
+    {ANEMO, {1, 4, 10}},
+    {CRYO, {4, 6, 10}},
+    {DENDRO, {1, 4, 10}},
+    {PLASMA, {4, 6, 10}},
+    {FIRE, {4, 6, 10}},
+    {GEO, {1, 4, 10}},
+    {ELECTRO, {4, 6, 10}},
+    {WATER, {1, 5, 10}}
+    };
+
     std::vector<std::pair<int, int>> potentialCollisions;
-    // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
+
     static float slime_spawn_timer = 0.0f;
 
     // Start playback
@@ -663,6 +781,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
         // Aqui executamos as operações de renderização
@@ -703,7 +822,12 @@ int main(int argc, char* argv[])
                 }
                 else if(g_TwokeyPressed)
                 {
-                    mode = !mode;
+                    ma_sound_start(&select_sound);
+                    mode = CHEAT_MODE;
+                    for (auto& pair : balance) 
+                    {
+                        pair.second += 99;
+                    }
                     g_TwokeyPressed = false;
                 }
                 glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -764,6 +888,7 @@ int main(int argc, char* argv[])
             {
                 if (g_EsckeyPressed)
                 {
+                    ma_sound_start(&goodbye_sound);
                     current_game_state = GAME;
                     g_EsckeyPressed = false;
                     break;
@@ -807,6 +932,89 @@ int main(int argc, char* argv[])
                 glUniform2f(tilingLocation, 1.0f, 1.0f);
                 DrawVirtualObject("menu");
 
+                //Text
+                float line_spacing = 0.165f;
+                float x = -0.99f;
+                float start_y = 0.9f;
+                float scale = 1.5f;
+                std::string constructed_string;
+                TextRendering_PrintString(window, "Upgrades (from level 0 to 3):", x, start_y, scale);
+                TextRendering_PrintString(window, "(1) Movement Speed Level " + std::to_string(movement_speed_level), x, start_y - line_spacing, scale);
+                if(movement_speed_level < 3)
+                {
+                    constructed_string = "";
+                    for (const auto& pair : movement_speed_costs) 
+                    {
+                        constructed_string += to_string(pair.first) + ":" + std::to_string(pair.second[movement_speed_level]) + ";";
+                    }
+                }
+                else
+                {
+                    constructed_string = "All upgrades purchased!";
+                }
+                TextRendering_PrintString(window, "Cost: " + constructed_string, x, start_y - line_spacing * 2, scale);
+                TextRendering_PrintString(window, "(2) Stamina Level " + std::to_string(stamina_level), x, start_y - line_spacing * 3, scale);
+                if(stamina_level < 3)
+                {
+                    constructed_string = "";
+                    for (const auto& pair : stamina_costs) 
+                    {
+                        constructed_string += to_string(pair.first) + ":" + std::to_string(pair.second[stamina_level]) + ";";
+                    }
+                }
+                else
+                {
+                    constructed_string = "All upgrades purchased!";
+                }
+                TextRendering_PrintString(window, "Cost: " + constructed_string, x, start_y - line_spacing * 4, scale);
+                TextRendering_PrintString(window, "(3) Slime Spawn Rate Level " + std::to_string(slime_spawn_rate_level), x, start_y - line_spacing * 5, scale);
+                if(slime_spawn_rate_level < 3)
+                {
+                    constructed_string = "";
+                    for (const auto& pair : slime_spawn_rate_costs) 
+                    {
+                        constructed_string += to_string(pair.first) + ":" + std::to_string(pair.second[slime_spawn_rate_level]) + ";";
+                    }
+                }
+                else
+                {
+                    constructed_string = "All upgrades purchased!";
+                }
+                TextRendering_PrintString(window, "Cost: " + constructed_string, x, start_y - line_spacing * 6, scale);
+                TextRendering_PrintString(window, "(4) Inventory Level " + std::to_string(inventory_level), x, start_y - line_spacing * 7, scale);
+                if(inventory_level < 3)
+                {
+                    constructed_string = "";
+                    for (const auto& pair : inventory_costs) 
+                    {
+                        constructed_string += to_string(pair.first) + ":" + std::to_string(pair.second[inventory_level]) + ";";
+                    }
+                }
+                else
+                {
+                    constructed_string = "All upgrades purchased!";
+                }
+                TextRendering_PrintString(window, "Cost: " + constructed_string, x, start_y - line_spacing * 8, scale);
+                if(lore_progress_level < 3)
+                {
+                    constructed_string = "";
+                    for (const auto& pair : lore_progress_costs) 
+                    {
+                        constructed_string += to_string(pair.first) + ":" + std::to_string(pair.second[lore_progress_level]) + ";";
+                    }
+                }
+                else
+                {
+                    constructed_string = "All upgrades purchased!";
+                }
+                TextRendering_PrintString(window, "(5) Progress Lore Level " + std::to_string(lore_progress_level), x, start_y - line_spacing * 9, scale);
+                TextRendering_PrintString(window, "Cost: " + constructed_string, x, start_y - line_spacing * 10, scale);
+                constructed_string = "";
+                for (const auto& pair : balance) 
+                {
+                    constructed_string += to_string(pair.first) + ":" + std::to_string(pair.second) + ";";
+                }
+                TextRendering_PrintString(window, "Balance: " + constructed_string, x, start_y - line_spacing * 11, scale);
                 TextRendering_ShowFramesPerSecond(window);
                 glfwSwapBuffers(window);
                 glfwPollEvents();
@@ -816,6 +1024,7 @@ int main(int argc, char* argv[])
             {
                 if (g_EsckeyPressed)
                 {
+                    ma_sound_start(&select_sound);
                     g_EsckeyPressed = false;
                     current_game_state = MAIN_MENU;
                     last_game_state = WIN;
@@ -911,6 +1120,7 @@ int main(int argc, char* argv[])
             {
                 if (g_EsckeyPressed)
                 {
+                    ma_sound_start(&select_sound);
                     g_EsckeyPressed = false;
                     current_game_state = MAIN_MENU;
                     last_game_state = GAME;
@@ -975,7 +1185,7 @@ int main(int argc, char* argv[])
                 slime_spawn_timer += delta_t;
                 prev_time = current_time;
 
-                float speed = g_IsSprinting ? SPRINT_SPEED : NORMAL_SPEED;
+                float speed = NORMAL_SPEED + float(movement_speed_level) + (g_IsSprinting ?  SPRINT_BONUS : 0);
 
                 bool started_jumping;
                 // Initialize variables to track the loudest jump
@@ -1007,7 +1217,7 @@ int main(int argc, char* argv[])
                     ma_sound_set_volume(&slime_jump_sound, maxVolume);
                     ma_sound_start(&slime_jump_sound);
                 }
-                if (slime_spawn_timer >= SLIME_SPAWN_TIME && slime_count < SLIME_LIMIT) {
+                if ((slime_spawn_timer >= std::max((SLIME_SPAWN_TIME - float(slime_spawn_rate_level)), 1.0f)) && slime_count < SLIME_LIMIT) {
                     // Reset the spawn timer
                     slime_spawn_timer = 0.0f;
 
@@ -1181,27 +1391,19 @@ int main(int argc, char* argv[])
                             float magnitude = glm::length(direction);
                             if (magnitude > 1e-5f) {
                                 direction = glm::normalize(direction);
-                                camera_position_c += direction * ((speed == SPRINT_SPEED ? SPRINT_SPEED : NORMAL_SPEED) * delta_t * 0.05f);
+                                camera_position_c += direction * speed * delta_t * 0.05f;
                             }
-                            if (speed == SPRINT_SPEED) {
-                                camera_position_c += direction * SPRINT_SPEED * delta_t * 0.05f;
-                            } else if (speed == NORMAL_SPEED) {
-                                camera_position_c += direction * NORMAL_SPEED * delta_t * 0.05f;
-                            } 
+                            camera_position_c += direction * speed * delta_t * 0.05f;
                         }
                     } else if(pair.first == -2) { // Colisão camera com as faces do cubo
                         if (pair.second == 0) {
-                            if (speed == SPRINT_SPEED) camera_position_c += frontFaceDirection * SPRINT_SPEED * delta_t * 0.05f;
-                            else if (speed == NORMAL_SPEED) camera_position_c -= frontFaceDirection * NORMAL_SPEED * delta_t * 0.05f;
+                            camera_position_c -= frontFaceDirection * speed * delta_t * 0.05f;
                         } else if (pair.second == 1) {
-                            if (speed == SPRINT_SPEED) camera_position_c += backFaceDirection * SPRINT_SPEED * delta_t * 0.05f;
-                            else if (speed == NORMAL_SPEED) camera_position_c -= backFaceDirection * NORMAL_SPEED * delta_t * 0.05f;
+                            camera_position_c -= backFaceDirection * speed * delta_t * 0.05f;
                         } else if (pair.second == 2) {
-                            if (speed == SPRINT_SPEED) camera_position_c += leftFaceDirection * SPRINT_SPEED * delta_t * 0.05f;
-                            else if (speed == NORMAL_SPEED) camera_position_c -= leftFaceDirection * NORMAL_SPEED * delta_t * 0.05f;
+                            camera_position_c -= leftFaceDirection * speed * delta_t * 0.05f;
                         } else if (pair.second == 3) {
-                            if (speed == SPRINT_SPEED) camera_position_c += rightFaceDirection * SPRINT_SPEED * delta_t * 0.05f;
-                            else if (speed == NORMAL_SPEED) camera_position_c -= rightFaceDirection * NORMAL_SPEED * delta_t * 0.05f;
+                            camera_position_c -= rightFaceDirection * speed * delta_t * 0.05f;
                         }
                     }
                 }
@@ -1291,16 +1493,16 @@ int main(int argc, char* argv[])
                         DrawVirtualObject("dendro14");
                         DrawVirtualObject("dendro15");
                         DrawVirtualObject("dendro16");
-                    } else if (creature->GetType() == 3) { // Electro
+                    } else if (creature->GetType() == 3) { // Plasma
                         model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
                                     * Matrix_Rotate_Y(rotation_angle) 
                                     * Matrix_Scale(0.01f, 0.01f, 0.01f);
                         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
                         glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
                         glUniform2f(tilingLocation, 1.0f, 1.0f);
-                        DrawVirtualObject("electro1");
-                        DrawVirtualObject("electro2");
-                        DrawVirtualObject("electro3");
+                        DrawVirtualObject("plasma1");
+                        DrawVirtualObject("plasma2");
+                        DrawVirtualObject("plasma3");
                     } else if (creature->GetType() == 4) { // Fire
                         model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
                                     * Matrix_Rotate_Y(rotation_angle) 
@@ -1318,16 +1520,16 @@ int main(int argc, char* argv[])
                         glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
                         glUniform2f(tilingLocation, 1.0f, 1.0f);
                         DrawVirtualObject("geo1");
-                    } else if (creature->GetType() == 6) { // Mutated Electro
+                    } else if (creature->GetType() == 6) { //Electro
                         model = Matrix_Translate(position.x, position.y - 1.5f, position.z)
                                     * Matrix_Rotate_Y(rotation_angle)
                                     * Matrix_Scale(0.01f, 0.01f, 0.01f);
                         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
                         glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
                         glUniform2f(tilingLocation, 1.0f, 1.0f); 
-                        DrawVirtualObject("mutated-electro1");
-                        DrawVirtualObject("mutated-electro2");
-                        DrawVirtualObject("mutated-electro3");
+                        DrawVirtualObject("electro1");
+                        DrawVirtualObject("electro2");
+                        DrawVirtualObject("electro3");
                     } else if (creature->GetType() == 7) { // Water
                         model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
                                     * Matrix_Rotate_Y(rotation_angle) 
@@ -1353,28 +1555,28 @@ int main(int argc, char* argv[])
                 TextRendering_ShowFramesPerSecond(window);
 
                 //Lore audio
-                if((!listened_to_lore[0] || (g_OnekeyPressed && listened_to_lore[0]))
+                if(((!listened_to_lore[0] && lore_progress_level == 0) || (g_OnekeyPressed && (mode == CHEAT_MODE || listened_to_lore[0])))
                 && (!ma_sound_is_playing(&lore2_sound) && !ma_sound_is_playing(&lore3_sound) && !ma_sound_is_playing(&ending_sound)))
                 {
                     ma_sound_set_volume(&lore1_sound, 1.5f);
                     ma_sound_start(&lore1_sound);
                     listened_to_lore[0] = true;
                 }
-                else if(((!listened_to_lore[1] && false) || (g_TwokeyPressed && (mode == CHEAT_MODE || listened_to_lore[1])))
-                && (ma_sound_is_playing(&lore1_sound) && !ma_sound_is_playing(&lore3_sound) && !ma_sound_is_playing(&ending_sound)))
+                else if(((!listened_to_lore[1] && lore_progress_level == 1) || (g_TwokeyPressed && (mode == CHEAT_MODE || listened_to_lore[1])))
+                && (!ma_sound_is_playing(&lore1_sound) && !ma_sound_is_playing(&lore3_sound) && !ma_sound_is_playing(&ending_sound)))
                 {
                     ma_sound_set_volume(&lore2_sound, 1.5f);
                     ma_sound_start(&lore2_sound);
                     listened_to_lore[1] = true;
                 }
-                else if(((!listened_to_lore[2] && false) || (g_ThreekeyPressed && (mode == CHEAT_MODE || listened_to_lore[2])))
+                else if(((!listened_to_lore[2] && lore_progress_level == 2) || (g_ThreekeyPressed && (mode == CHEAT_MODE || listened_to_lore[2])))
                  && (!ma_sound_is_playing(&lore1_sound) && !ma_sound_is_playing(&lore2_sound) && !ma_sound_is_playing(&ending_sound)))
                 {
                     ma_sound_set_volume(&lore3_sound, 1.5f);
                     ma_sound_start(&lore3_sound);
                     listened_to_lore[2] = true;
                 }
-                else if(((!listened_to_lore[3] && false) || (g_FourkeyPressed && (mode == CHEAT_MODE || listened_to_lore[3])))
+                else if(((!listened_to_lore[3] && lore_progress_level == 3) || (g_FourkeyPressed && (mode == CHEAT_MODE || listened_to_lore[3])))
                  && (!ma_sound_is_playing(&lore1_sound) && !ma_sound_is_playing(&lore2_sound) && !ma_sound_is_playing(&lore3_sound)))
                 {
                     ma_sound_set_volume(&ending_sound, 1.5f);
@@ -1418,7 +1620,9 @@ int main(int argc, char* argv[])
                 }
                 else if(g_FivekeyPressed)
                 {
+                    ma_sound_start(&welcome_sound);
                     current_game_state = UPGRADE;
+                    g_FivekeyPressed = false;
                 }
 
 
@@ -1630,10 +1834,10 @@ void LoadShadersFromFiles()
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "anemo"), 3);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "cryo"), 4);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "dendro"), 5);
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "electro"), 6);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "plasma"), 6);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "fire"), 7);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "geo"), 8);
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "mutated_electro"), 9);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "electro"), 9);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "water"), 10);
     // skybox
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "skybox"), 11);
