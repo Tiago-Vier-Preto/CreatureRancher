@@ -232,6 +232,9 @@ GLuint tilingLocation;
 GLuint g_NumLoadedTextures = 0;
 
 // Variáveis que guardam o estado das teclas do teclado. 
+bool g_EsckeyPressed = false;
+
+
 bool g_DkeyPressed = false;
 bool g_AkeyPressed = false;
 bool g_WkeyPressed = false;
@@ -286,9 +289,9 @@ int main(int argc, char* argv[])
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 
-    GameState current_game_state = GAME;
-
-    bool listened_to_lore[3] = {false};
+    GameState current_game_state = MAIN_MENU;
+    GameState last_game_state = GAME;
+    bool listened_to_lore[4] = {false};
 
     bool mode = START_MODE;
 
@@ -304,6 +307,16 @@ int main(int argc, char* argv[])
         fprintf(stderr, "ERROR: glfwCreateWindow() failed.\n");
         std::exit(EXIT_FAILURE);
     }
+    
+    //Game Icon
+    int width, height;
+    int channels;
+    unsigned char* pixels = stbi_load("../../data/icon/icon.png", &width, &height, &channels, 4);
+    GLFWimage icon[1];
+    icon[0].width = width;
+    icon[0].height = height;
+    icon[0].pixels = pixels;
+    glfwSetWindowIcon(window, 1, icon);
 
     ma_result result;
     ma_device_config deviceConfig;
@@ -337,7 +350,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    currentDecoder = &decoder_game; // Start with game music
+    currentDecoder = &decoder_menu; // Start with game music
 
     // Configure playback device
     deviceConfig = ma_device_config_init(ma_device_type_playback);
@@ -549,6 +562,10 @@ int main(int argc, char* argv[])
 
     LoadTextureImage("../../data/god/god.png"); // 30
 
+    LoadTextureImage("../../data/menu/menu.png"); // 31
+    LoadTextureImage("../../data/menu/menu.png"); // 31
+    LoadTextureImage("../../data/menu/controls.jpg"); // 32
+
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel planemodel("../../data/plane.obj");
     ComputeNormals(&planemodel);
@@ -602,6 +619,9 @@ int main(int argc, char* argv[])
     ComputeNormals(&god);
     BuildTrianglesAndAddToVirtualScene(&god);
 
+    ObjModel menu("../../data/menu/menu.obj");
+    ComputeNormals(&menu);
+    BuildTrianglesAndAddToVirtualScene(&menu);
 
     if ( argc > 1 )
     {
@@ -649,9 +669,140 @@ int main(int argc, char* argv[])
         switch(current_game_state)
         {
             case MAIN_MENU:
+            {
+                if (g_EsckeyPressed)
+                {
+                    glfwSetWindowShouldClose(window, GL_TRUE);
+                    break;
+                }
+                else if(g_OnekeyPressed)
+                {
+                    current_game_state = last_game_state;
+                    if(current_game_state == GAME)
+                    {
+                        currentDecoder = &decoder_game;
+                    }
+                    else if(current_game_state == WIN)
+                    {
+                        currentDecoder = &decoder_win;
+                    }
+                    ma_device_uninit(&device);
+                    ma_decoder_seek_to_pcm_frame(currentDecoder, 0);
+                    deviceConfig.pUserData = currentDecoder;
+                    result = ma_device_init(NULL, &deviceConfig, &device);
+                    if (result != MA_SUCCESS) 
+                    {
+                        printf("Failed to reinitialize playback device.\n");
+                    }
+                    result = ma_device_start(&device);
+                    if (result != MA_SUCCESS) 
+                    {
+                        printf("Failed to start playback device.\n");
+                    }
+                    g_OnekeyPressed = false;
+                }
+                else if(g_TwokeyPressed)
+                {
+                    mode = !mode;
+                    g_TwokeyPressed = false;
+                    printf("Mode now %d\n", mode);
+                }
+                glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                glUseProgram(g_GpuProgramID);
+                glm::vec3 menu_center = glm::vec3(0.0f, 0.0f, 0.0f);
+                float menu_aspect_ratio = 1920.0f / 1080.0f; 
+                float menu_width = 2.0f;
+                float menu_height = 2.0f;
+                glm::vec4 camera_position_c = glm::vec4(0.0f, 0.0f, 1.5f, 1.0f); // Ponto "c", centro da câmera
+                glm::vec4 camera_lookat_l = glm::vec4(menu_center, 1.0f);  // Ponto "l", para onde a câmera (look-at) estará sempre olhando
+                glm::vec4 camera_view_vector = camera_lookat_l - camera_position_c;
+                glm::vec4 camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f);
+                glm::mat4 view = Matrix_Camera_View(camera_position_c, camera_view_vector, camera_up_vector);
+                glm::mat4 projection;
+                float nearplane = -0.1f;
+                float farplane  = -1000.0f;
+                if (g_UsePerspectiveProjection)
+                {
+                    float field_of_view = 3.141592f / 3.0f;
+                    projection = Matrix_Perspective(field_of_view, g_ScreenRatio, nearplane, farplane);
+                }
+                else
+                {
+                    float t = 1.5f*g_CameraDistance/2.5f;
+                    float b = -t;
+                    float r = t*g_ScreenRatio;
+                    float l = -r;
+                    projection = Matrix_Orthographic(l, r, b, t, nearplane, farplane);
+                }
+
+                glUniformMatrix4fv(g_view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
+                glUniformMatrix4fv(g_projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
+                #define MENU 31
+                #define CONTROLS 32
+                glm::mat4 model = Matrix_Identity();
+                model = Matrix_Translate(menu_center.x, menu_center.y, menu_center.z)
+                        * Matrix_Scale(1.54f, 0.88f, 1.0f);
+                glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+                if(g_ThreekeyPressed)
+                {
+                    glUniform1i(g_object_id_uniform, CONTROLS);
+                    glUniform2f(tilingLocation, 1.0f, 1.0f);
+                    DrawVirtualObject("menu");
+                }
+                else
+                {
+                    glUniform1i(g_object_id_uniform, MENU);
+                    glUniform2f(tilingLocation, 1.0f, 1.0f);
+                    DrawVirtualObject("menu");
+                }
+
+                TextRendering_ShowFramesPerSecond(window);
+                glfwSwapBuffers(window);
+                glfwPollEvents();
                 break;
+            }
             case WIN:
             {
+                if (g_EsckeyPressed)
+                {
+                    g_EsckeyPressed = false;
+                    current_game_state = MAIN_MENU;
+                    last_game_state = WIN;
+                    currentDecoder = &decoder_menu;
+                    ma_device_uninit(&device);
+                    ma_decoder_seek_to_pcm_frame(currentDecoder, 0);
+                    deviceConfig.pUserData = currentDecoder;
+                    result = ma_device_init(NULL, &deviceConfig, &device);
+                    if (result != MA_SUCCESS) 
+                    {
+                        printf("Failed to reinitialize playback device.\n");
+                    }
+                    result = ma_device_start(&device);
+                    if (result != MA_SUCCESS) 
+                    {
+                        printf("Failed to start playback device.\n");
+                    }
+                }
+                else if(g_ZerokeyPressed)
+                {
+                    current_game_state = GAME;
+                    g_ZerokeyPressed = false;
+                    currentDecoder = &decoder_game;
+                    ma_device_uninit(&device);
+                    ma_decoder_seek_to_pcm_frame(currentDecoder, 0);
+                    deviceConfig.pUserData = currentDecoder;
+                    result = ma_device_init(NULL, &deviceConfig, &device);
+                    if (result != MA_SUCCESS) 
+                    {
+                        printf("Failed to reinitialize playback device.\n");
+                    }
+                    result = ma_device_start(&device);
+                    if (result != MA_SUCCESS) 
+                    {
+                        printf("Failed to start playback device.\n");
+                    }
+                }
                 glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                 glUseProgram(g_GpuProgramID);
@@ -667,11 +818,6 @@ int main(int argc, char* argv[])
                 glm::mat4 projection;
                 float nearplane = -0.1f;
                 float farplane  = -1000.0f;
-
-                float current_time = (float)glfwGetTime();
-                float delta_t = current_time - prev_time;
-                prev_time = current_time;
-
                 if (g_UsePerspectiveProjection)
                 {
                     float field_of_view = 3.141592f / 3.0f;
@@ -707,11 +853,18 @@ int main(int argc, char* argv[])
 
                 TextRendering_ShowFramesPerSecond(window);
                 glfwSwapBuffers(window);
-                if(g_ZerokeyPressed)
+                glfwPollEvents();
+                break;
+            }
+
+            case GAME:
+            {
+                if (g_EsckeyPressed)
                 {
-                    current_game_state = GAME;
-                    g_ZerokeyPressed = false;
-                    currentDecoder = &decoder_game;
+                    g_EsckeyPressed = false;
+                    current_game_state = MAIN_MENU;
+                    last_game_state = GAME;
+                    currentDecoder = &decoder_menu;
                     ma_device_uninit(&device);
                     ma_decoder_seek_to_pcm_frame(currentDecoder, 0);
                     deviceConfig.pUserData = currentDecoder;
@@ -726,11 +879,6 @@ int main(int argc, char* argv[])
                         printf("Failed to start playback device.\n");
                     }
                 }
-                glfwPollEvents();
-                break;
-            }
-            case GAME:
-            {
                 // Aqui executamos as operações de renderização
 
                 // Definimos a cor do "fundo" do framebuffer como branco.  Tal cor é
@@ -1155,29 +1303,29 @@ int main(int argc, char* argv[])
                 TextRendering_ShowFramesPerSecond(window);
 
                 //Lore audio
-                if((!listened_to_lore[0] || g_OnekeyPressed && listened_to_lore[1]) 
-                && !ma_sound_is_playing(&lore2_sound) && !ma_sound_is_playing(&lore3_sound) && !ma_sound_is_playing(&ending_sound))
+                if((!listened_to_lore[0] || (g_OnekeyPressed && listened_to_lore[0]))
+                && (!ma_sound_is_playing(&lore2_sound) && !ma_sound_is_playing(&lore3_sound) && !ma_sound_is_playing(&ending_sound)))
                 {
                     ma_sound_set_volume(&lore1_sound, 1.5f);
                     ma_sound_start(&lore1_sound);
                     listened_to_lore[0] = true;
                 }
-                else if((!listened_to_lore[1] && false || g_TwokeyPressed && (mode == CHEAT_MODE || listened_to_lore[1]))  
-                && !ma_sound_is_playing(&lore1_sound) && !ma_sound_is_playing(&lore3_sound) && !ma_sound_is_playing(&ending_sound))
+                else if(((!listened_to_lore[1] && false) || (g_TwokeyPressed && (mode == CHEAT_MODE || listened_to_lore[1])))
+                && (ma_sound_is_playing(&lore1_sound) && !ma_sound_is_playing(&lore3_sound) && !ma_sound_is_playing(&ending_sound)))
                 {
                     ma_sound_set_volume(&lore2_sound, 1.5f);
                     ma_sound_start(&lore2_sound);
                     listened_to_lore[1] = true;
                 }
-                else if((!listened_to_lore[2] && false || g_ThreekeyPressed && (mode == CHEAT_MODE || listened_to_lore[2]))
-                 && !ma_sound_is_playing(&lore1_sound) && !ma_sound_is_playing(&lore2_sound) && !ma_sound_is_playing(&ending_sound))
+                else if(((!listened_to_lore[2] && false) || (g_ThreekeyPressed && (mode == CHEAT_MODE || listened_to_lore[2])))
+                 && (!ma_sound_is_playing(&lore1_sound) && !ma_sound_is_playing(&lore2_sound) && !ma_sound_is_playing(&ending_sound)))
                 {
                     ma_sound_set_volume(&lore3_sound, 1.5f);
                     ma_sound_start(&lore3_sound);
                     listened_to_lore[2] = true;
                 }
-                else if((!listened_to_lore[3] && false || g_FourkeyPressed && (mode == CHEAT_MODE || listened_to_lore[3]))
-                 && !ma_sound_is_playing(&lore1_sound) && !ma_sound_is_playing(&lore2_sound) && !ma_sound_is_playing(&lore3_sound))
+                else if(((!listened_to_lore[3] && false) || (g_FourkeyPressed && (mode == CHEAT_MODE || listened_to_lore[3])))
+                 && (!ma_sound_is_playing(&lore1_sound) && !ma_sound_is_playing(&lore2_sound) && !ma_sound_is_playing(&lore3_sound)))
                 {
                     ma_sound_set_volume(&ending_sound, 1.5f);
                     ma_sound_start(&ending_sound);
@@ -1238,6 +1386,7 @@ int main(int argc, char* argv[])
             }
         }
     }
+    // Finalizamos o uso dos recursos do sistema operacional
     ma_device_uninit(&device);
     ma_decoder_uninit(&decoder_game);
     ma_decoder_uninit(&decoder_win);
@@ -1245,10 +1394,12 @@ int main(int argc, char* argv[])
     ma_sound_uninit(&slime_jump_sound);
     ma_sound_uninit(&step_sound);
     ma_sound_uninit(&jump_sound);
+    ma_sound_uninit(&lore1_sound);
+    ma_sound_uninit(&lore2_sound);
+    ma_sound_uninit(&lore3_sound);
+    ma_sound_uninit(&ending_sound);
     ma_engine_uninit(&engine);
-    // Finalizamos o uso dos recursos do sistema operacional
     glfwTerminate();
-
     // Fim do programa
     return 0;
 }
@@ -1453,8 +1604,10 @@ void LoadShadersFromFiles()
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage28"), 28);
 
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "heaven_skybox"), 29);
-
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "god"), 30);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "menu"), 31);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "menu"), 32);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "controls"), 33);
     glUseProgram(0);
 }
 
@@ -1976,9 +2129,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     if (key == GLFW_KEY_4 && action == GLFW_PRESS) g_FourkeyPressed = true;
     else if (key == GLFW_KEY_4 && action == GLFW_RELEASE) g_FourkeyPressed = false;
 
-    // Se o usuário pressionar a tecla ESC, fechamos a janela.
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GL_TRUE);
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) g_EsckeyPressed = true;
+    else if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) g_EsckeyPressed = false;
 
     // Altera o estado das teclas de movimentacao
     if (key == GLFW_KEY_D && action == GLFW_PRESS) g_DkeyPressed = true;
