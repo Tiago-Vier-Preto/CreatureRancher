@@ -39,6 +39,8 @@ uniform mat4 projection;
 #define GOD 30
 #define MENU 31
 #define CONTROLS 32
+#define UPGRADES 33
+
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -89,6 +91,9 @@ uniform sampler2D god;
 uniform sampler2D menu;
 
 uniform sampler2D controls;
+
+uniform sampler2D upgrades;
+
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
 
@@ -578,6 +583,18 @@ void main()
         V = texcoords.y;
 
         vec3 Kd0 = texture(controls, vec2(U,V)).rgb;
+
+        color.rgb = Kd0;
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == UPGRADES)
+    {
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(upgrades, vec2(U,V)).rgb;
 
         color.rgb = Kd0;
         color.a = 1;

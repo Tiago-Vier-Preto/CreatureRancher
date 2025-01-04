@@ -245,7 +245,7 @@ bool g_OnekeyPressed = false;
 bool g_TwokeyPressed = false;
 bool g_ThreekeyPressed = false;
 bool g_FourkeyPressed = false;
-
+bool g_FivekeyPressed = false;
 
 const float GRAVITY = -9.81f; 
 const float GROUND_LEVEL = 0.0f; 
@@ -260,7 +260,7 @@ bool g_IsSprinting = false;
 const float NORMAL_SPEED = 5.0f;
 const float SPRINT_SPEED = 10.0f;
 
-enum GameState{GAME, MAIN_MENU, WIN};
+enum GameState{GAME, MAIN_MENU, WIN, UPGRADE};
 
 int main(int argc, char* argv[])
 {
@@ -565,7 +565,7 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../data/menu/menu.png"); // 31
     LoadTextureImage("../../data/menu/menu.png"); // 31
     LoadTextureImage("../../data/menu/controls.jpg"); // 32
-
+    LoadTextureImage("../../data/upgrades/upgrades.png"); // 33
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel planemodel("../../data/plane.obj");
     ComputeNormals(&planemodel);
@@ -705,13 +705,11 @@ int main(int argc, char* argv[])
                 {
                     mode = !mode;
                     g_TwokeyPressed = false;
-                    printf("Mode now %d\n", mode);
                 }
                 glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                 glUseProgram(g_GpuProgramID);
                 glm::vec3 menu_center = glm::vec3(0.0f, 0.0f, 0.0f);
-                float menu_aspect_ratio = 1920.0f / 1080.0f; 
                 float menu_width = 2.0f;
                 float menu_height = 2.0f;
                 glm::vec4 camera_position_c = glm::vec4(0.0f, 0.0f, 1.5f, 1.0f); // Ponto "c", centro da câmera
@@ -756,6 +754,58 @@ int main(int argc, char* argv[])
                     glUniform2f(tilingLocation, 1.0f, 1.0f);
                     DrawVirtualObject("menu");
                 }
+
+                TextRendering_ShowFramesPerSecond(window);
+                glfwSwapBuffers(window);
+                glfwPollEvents();
+                break;
+            }
+            case UPGRADE:
+            {
+                if (g_EsckeyPressed)
+                {
+                    current_game_state = GAME;
+                    g_EsckeyPressed = false;
+                    break;
+                }
+                glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                glUseProgram(g_GpuProgramID);
+                glm::vec3 menu_center = glm::vec3(0.0f, 0.0f, 0.0f);
+                float menu_width = 2.0f;
+                float menu_height = 2.0f;
+                glm::vec4 camera_position_c = glm::vec4(0.0f, 0.0f, 1.5f, 1.0f); // Ponto "c", centro da câmera
+                glm::vec4 camera_lookat_l = glm::vec4(menu_center, 1.0f);  // Ponto "l", para onde a câmera (look-at) estará sempre olhando
+                glm::vec4 camera_view_vector = camera_lookat_l - camera_position_c;
+                glm::vec4 camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f);
+                glm::mat4 view = Matrix_Camera_View(camera_position_c, camera_view_vector, camera_up_vector);
+                glm::mat4 projection;
+                float nearplane = -0.1f;
+                float farplane  = -1000.0f;
+                if (g_UsePerspectiveProjection)
+                {
+                    float field_of_view = 3.141592f / 3.0f;
+                    projection = Matrix_Perspective(field_of_view, g_ScreenRatio, nearplane, farplane);
+                }
+                else
+                {
+                    float t = 1.5f*g_CameraDistance/2.5f;
+                    float b = -t;
+                    float r = t*g_ScreenRatio;
+                    float l = -r;
+                    projection = Matrix_Orthographic(l, r, b, t, nearplane, farplane);
+                }
+
+                glUniformMatrix4fv(g_view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
+                glUniformMatrix4fv(g_projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
+                #define UPGRADES 33
+                glm::mat4 model = Matrix_Identity();
+                model = Matrix_Translate(menu_center.x, menu_center.y, menu_center.z)
+                        * Matrix_Scale(1.54f, 0.88f, 1.0f);
+                glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, UPGRADES);
+                glUniform2f(tilingLocation, 1.0f, 1.0f);
+                DrawVirtualObject("menu");
 
                 TextRendering_ShowFramesPerSecond(window);
                 glfwSwapBuffers(window);
@@ -1366,6 +1416,10 @@ int main(int argc, char* argv[])
                         printf("Failed to start playback device.\n");
                     }
                 }
+                else if(g_FivekeyPressed)
+                {
+                    current_game_state = UPGRADE;
+                }
 
 
                 // O framebuffer onde OpenGL executa as operações de renderização não
@@ -1608,6 +1662,7 @@ void LoadShadersFromFiles()
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "menu"), 31);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "menu"), 32);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "controls"), 33);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "upgrades"), 34);
     glUseProgram(0);
 }
 
@@ -2128,6 +2183,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
 
     if (key == GLFW_KEY_4 && action == GLFW_PRESS) g_FourkeyPressed = true;
     else if (key == GLFW_KEY_4 && action == GLFW_RELEASE) g_FourkeyPressed = false;
+
+    if (key == GLFW_KEY_5 && action == GLFW_PRESS) g_FivekeyPressed = true;
+    else if (key == GLFW_KEY_5 && action == GLFW_RELEASE) g_FivekeyPressed = false;
 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) g_EsckeyPressed = true;
     else if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) g_EsckeyPressed = false;
