@@ -1693,6 +1693,15 @@ int main(int argc, char* argv[])
                         DrawVirtualObject("water2");
                     }
                 }
+                //Store Monster
+                model = Matrix_Translate(2.0f,4.25f,-30.0f)
+                        * Matrix_Scale(15.0f, 15.0f, 15.0f)
+                        * Matrix_Rotate_Y(M_PI)
+                        * Matrix_Rotate_X(M_PI / 16);
+                glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+                glUniform1i(g_object_id_uniform, STORE_MONSTER);
+                glUniform2f(tilingLocation, 1.0f, 1.0f);
+                DrawVirtualObject("store_monster");
 
                 // Desenhamos o modelo do cubo
                 model = Matrix_Translate(0.0f,0.0f,0.0f)

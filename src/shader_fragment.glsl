@@ -608,8 +608,11 @@ void main()
         V = texcoords.y;
 
         vec3 Kd0 = texture(store_monster, vec2(U,V)).rgb;
-        color = color_v;
-        color.rgb = Kd0 * 0.7f + color.rgb * 0.3f;
+
+        color.rgb = Kd0;
+        color.a = 1;
+
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
     }
     else if (object_id == -1) 
     {
