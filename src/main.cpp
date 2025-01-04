@@ -51,7 +51,8 @@
 #define NORMAL_MODE true
 #define CHEAT_MODE false
 #define START_MODE NORMAL_MODE
-
+#define DEFAULT_INVENTORY_SIZE 4
+#define DEFAULT_STAMINA 5.0f
 // Estrutura que representa um modelo geométrico carregado a partir de um
 // arquivo ".obj". Veja https://en.wikipedia.org/wiki/Wavefront_.obj_file .
 struct ObjModel
@@ -712,6 +713,7 @@ int main(int argc, char* argv[])
     };
     std::vector<Slime_Type> inventory = {};
 
+    float stamina_counter = DEFAULT_STAMINA;
 
     int movement_speed_level = 0;
     std::map<Slime_Type, std::vector<int>> movement_speed_costs = {
@@ -1312,8 +1314,29 @@ int main(int argc, char* argv[])
                 float delta_t = current_time - prev_time;
                 slime_spawn_timer += delta_t;
                 prev_time = current_time;
-
-                float speed = NORMAL_SPEED + float(movement_speed_level) + (g_IsSprinting ?  SPRINT_BONUS : 0);
+                float speed;
+                if(g_IsSprinting)
+                {
+                    if(stamina_counter > 0.0f)
+                    {
+                        stamina_counter -= delta_t;
+                        speed = NORMAL_SPEED + float(movement_speed_level) + SPRINT_BONUS;
+                    }
+                    else
+                    {
+                        stamina_counter = 0.0f;
+                        speed = NORMAL_SPEED + float(movement_speed_level);
+                    }
+                }
+                else
+                {
+                    stamina_counter += delta_t;
+                    speed = NORMAL_SPEED + float(movement_speed_level);
+                    if(stamina_counter > DEFAULT_STAMINA + stamina_level)
+                    {
+                        stamina_counter = DEFAULT_STAMINA + stamina_level;
+                    }
+                }
 
                 bool started_jumping;
                 // Initialize variables to track the loudest jump
