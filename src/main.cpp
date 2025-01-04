@@ -1750,6 +1750,12 @@ int main(int argc, char* argv[])
                 else if(g_FivekeyPressed)
                 {
                     ma_sound_start(&welcome_sound);
+
+                    for (const auto& slime : inventory)
+                    {
+                        balance[slime]++;
+                    }
+                    inventory.clear();
                     current_game_state = UPGRADE;
                     g_FivekeyPressed = false;
                 }
