@@ -1373,6 +1373,7 @@ int main(int argc, char* argv[])
                 slime_spawn_timer += delta_t;
                 prev_time = current_time;
                 float speed;
+                float stamina_total = DEFAULT_STAMINA + stamina_level * 3;
                 if(g_IsSprinting)
                 {
                     if(stamina_counter > 0.0f)
@@ -1390,9 +1391,9 @@ int main(int argc, char* argv[])
                 {
                     stamina_counter += delta_t;
                     speed = NORMAL_SPEED + float(movement_speed_level);
-                    if(stamina_counter > DEFAULT_STAMINA + stamina_level * 3)
+                    if(stamina_counter > stamina_total)
                     {
-                        stamina_counter = DEFAULT_STAMINA + stamina_level * 3;
+                        stamina_counter = stamina_total;
                     }
                 }
 
@@ -1471,8 +1472,8 @@ int main(int argc, char* argv[])
 
                 // Play Step sound if the player moved
                 if (playerMoved && !g_IsJumping) {
-                    ma_sound_set_volume(&step_sound, g_IsSprinting ? 1.0f : 0.8f);
-                    ma_sound_set_pitch(&step_sound, g_IsSprinting ? 1.2f : 1.0f); // Increase pitch when sprinting
+                    ma_sound_set_volume(&step_sound, g_IsSprinting && stamina_counter > 0 ? 1.0f : 0.8f);
+                    ma_sound_set_pitch(&step_sound, g_IsSprinting && stamina_counter > 0 ? 1.5f : 1.0f); // Increase pitch when sprinting
                     ma_sound_start(&step_sound);
                 }
                 if (g_Player_Started_Jumping) {
@@ -1790,12 +1791,15 @@ int main(int argc, char* argv[])
                 glUniform2f(tilingLocation, 1.0f, 1.0f);
                 DrawVirtualObject("cube");
 
+                //Texto na tela
                 std::string constructed_string = "Inventory: Capacity: " + std::to_string(DEFAULT_INVENTORY_SIZE + inventory_level) + ", Size: " + std::to_string(inventory_size) + ", Items: ";
                 for(const auto& slime : inventory) 
                 {
                     constructed_string += to_string(slime) + ", ";
                 }
                 TextRendering_PrintString(window, constructed_string, -0.99f, -0.95, 1.5f);
+                constructed_string = "Stamina: " + std::to_string(stamina_counter) + "/" + std::to_string(stamina_total);
+                TextRendering_PrintString(window, constructed_string, -0.99f, 0.95, 1.5f);
 
                 // Imprimimos na tela informação sobre o número de quadros renderizados
                 // por segundo (frames per second).
