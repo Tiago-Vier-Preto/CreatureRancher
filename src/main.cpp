@@ -548,6 +548,16 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    // Load Forcefield sound effect
+    file_path = "../../data/sfx/forcefield.wav";
+    ma_sound forcefield_sound;
+    result_sfx = ma_sound_init_from_file(&engine, file_path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &forcefield_sound);
+    if (result_sfx != MA_SUCCESS)
+    {
+        printf("Failed to load forcefield sound: %d\n", result_sfx);
+        ma_engine_uninit(&engine);
+        return -1;
+    }
     // Definimos a função de callback que será chamada sempre que o usuário
     // pressionar alguma tecla do teclado ...
     glfwSetKeyCallback(window, KeyCallback);
@@ -1644,25 +1654,20 @@ int main(int argc, char* argv[])
                         {
                             glm::vec3 cameraPosition3D = glm::vec3(camera_position_c);
                             float distToPlane = glm::dot(faceNormal, cameraPosition3D) - planeOffset;
-
                             if (distToPlane < 0.6f) {
-                                // Compute the amount to move the camera back to the boundary
+
+                                ma_sound_set_volume(&forcefield_sound, 3.0f);
+                                ma_sound_start(&forcefield_sound);
                                 float correctionDistance = 0.6f - distToPlane;
-
-                                // Apply the correction directly along the face normal
                                 glm::vec3 correction = faceNormal * correctionDistance;
-
-                                // Snap the player to the boundary smoothly
                                 camera_position_c += glm::vec4(correction, 0.0f);
-
-                                // Optionally, zero out the movement in the direction of the faceNormal
-                                // to prevent further movement into the wall
                                 glm::vec3 velocityDirection = glm::vec3(-w_vector_flat * speed);
                                 float velocityIntoPlane = glm::dot(velocityDirection, faceNormal);
                                 if (velocityIntoPlane > 0) {
                                     glm::vec3 newVelocity = velocityDirection - (faceNormal * velocityIntoPlane);
                                     camera_position_c -= glm::vec4(newVelocity * delta_t, 0.0f);
                                 }
+
                             }
                             
                         }
@@ -2087,6 +2092,14 @@ int main(int argc, char* argv[])
     ma_sound_uninit(&lore2_sound);
     ma_sound_uninit(&lore3_sound);
     ma_sound_uninit(&ending_sound);
+    ma_sound_uninit(&select_sound);
+    ma_sound_uninit(&buy_sound);
+    ma_sound_uninit(&welcome_sound);
+    ma_sound_uninit(&goodbye_sound);
+    ma_sound_uninit(&fail_sound);
+    ma_sound_uninit(&pickup_sound);
+    ma_sound_uninit(&kill_sound);
+    ma_sound_uninit(&forcefield_sound);
     ma_engine_uninit(&engine);
     glfwTerminate();
     // Fim do programa
