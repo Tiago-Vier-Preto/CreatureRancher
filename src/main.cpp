@@ -1386,7 +1386,7 @@ int main(int argc, char* argv[])
                 }
                 else
                 {
-                    stamina_counter += delta_t;
+                    stamina_counter += delta_t + stamina_level * (delta_t/2);
                     if(stamina_counter > stamina_total)
                     {
                         stamina_counter = stamina_total;
