@@ -4,9 +4,10 @@
 #include <glm/vec4.hpp>
 #include <vector>
 #include <string>
+
 #define SLIME_SPAWN_TIME 10.0f
-#define SLIME_LIMIT 1000
-#define STARTING_SLIMES 100
+#define SLIME_LIMIT 10000
+#define STARTING_SLIMES 10000
 class Creature {
 public:
     Creature(float x, float y, float z, float jump_velocity, float jump_chance, float gravity);

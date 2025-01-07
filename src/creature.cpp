@@ -34,6 +34,9 @@ bool Creature::Update(float delta_t) {
             position += direction * delta_t; // Move para frente na direção da rotação
         }
 
+        position.x = glm::clamp(position.x, -299.0f, 299.0f);
+        position.z = glm::clamp(position.z, -299.0f, 299.0f);
+
         // Interpolar suavemente o ângulo de rotação atual em direção ao ângulo de rotação alvo
         float rotation_speed = glm::radians(90.0f) * delta_t; // Velocidade de rotação (ajuste conforme necessário)
         if (glm::angle(glm::vec2(cos(rotation_angle), sin(rotation_angle)), glm::vec2(cos(target_rotation_angle), sin(target_rotation_angle))) > rotation_speed) {
