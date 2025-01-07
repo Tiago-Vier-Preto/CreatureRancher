@@ -259,7 +259,7 @@ const float JUMP_VELOCITY = 5.0f; // Initial velocity for the jump
 
 bool g_IsSprinting = false;
 const float NORMAL_SPEED = 5.0f;
-const float SPRINT_BONUS = 5.0f;
+const float SPRINT_BONUS = 10.0f;
 
 enum GameState{GAME, MAIN_MENU, WIN, UPGRADE};
 
@@ -1372,25 +1372,23 @@ int main(int argc, char* argv[])
                 float delta_t = current_time - prev_time;
                 slime_spawn_timer += delta_t;
                 prev_time = current_time;
-                float speed;
                 float stamina_total = DEFAULT_STAMINA + stamina_level * 3;
+                float speed = NORMAL_SPEED + float(movement_speed_level);
                 if(g_IsSprinting)
                 {
                     if(stamina_counter > 0.0f)
                     {
                         stamina_counter -= delta_t;
-                        speed = NORMAL_SPEED + float(movement_speed_level) + SPRINT_BONUS;
+                        speed += SPRINT_BONUS;
                     }
                     else
                     {
                         stamina_counter = 0.0f;
-                        speed = NORMAL_SPEED + float(movement_speed_level);
                     }
                 }
                 else
                 {
                     stamina_counter += delta_t;
-                    speed = NORMAL_SPEED + float(movement_speed_level);
                     if(stamina_counter > stamina_total)
                     {
                         stamina_counter = stamina_total;
@@ -1556,30 +1554,26 @@ int main(int argc, char* argv[])
                 glUniform1i(g_object_id_uniform, WEAPON);
                 glUniform2f(tilingLocation, 1.0f, 1.0f);
                 DrawVirtualObject("weapon");
-
+                
                 glm::vec3 cubeCenter = glm::vec3(0.0f, 0.0f, 0.0f);
                 glm::vec3 cubeSize = glm::vec3(map_width, map_height, map_length);
 
                 AABB frontFace;
                 frontFace.min = cubeCenter + glm::vec3(-cubeSize.x, -cubeSize.y, cubeSize.z);
                 frontFace.max = cubeCenter + glm::vec3(cubeSize.x, cubeSize.y, cubeSize.z);
-                glm::vec4 frontFaceDirection = glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
 
                 AABB backFace;
                 backFace.min = cubeCenter + glm::vec3(-cubeSize.x, -cubeSize.y, -cubeSize.z);
                 backFace.max = cubeCenter + glm::vec3(cubeSize.x, cubeSize.y, -cubeSize.z);
-                glm::vec4 backFaceDirection = glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
 
                 AABB leftFace;
                 leftFace.min = cubeCenter + glm::vec3(-cubeSize.x, -cubeSize.y, -cubeSize.z);
                 leftFace.max = cubeCenter + glm::vec3(-cubeSize.x, cubeSize.y, cubeSize.z);
-                glm::vec4 leftFaceDirection = glm::vec4(-1.0f, 0.0f, 0.0f, 0.0f);
 
                 AABB rightFace;
                 
                 rightFace.min = cubeCenter + glm::vec3(cubeSize.x, -cubeSize.y, -cubeSize.z);
                 rightFace.max = cubeCenter + glm::vec3(cubeSize.x, cubeSize.y, cubeSize.z);
-                glm::vec4 rightFaceDirection = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
 
                 AABB cameraAABB = ComputeAABB(glm::vec3(camera_position_c), glm::vec3(0.7f, 0.7f, 2.5f));
 
@@ -1588,6 +1582,9 @@ int main(int argc, char* argv[])
                 if (CheckAABBOverlap(cameraAABB, backFace)) potentialCollisions.push_back({-2, 1});
                 if (CheckAABBOverlap(cameraAABB, leftFace)) potentialCollisions.push_back({-2, 2});
                 if (CheckAABBOverlap(cameraAABB, rightFace)) potentialCollisions.push_back({-2, 3});
+
+                // Colisao com o Store Monster
+                AABB storeMonsterAABB = ComputeAABB(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.55f, 0.55f, 0.55f));
                 
                 for (size_t i = 0; i < creatures.size(); ++i) {
                     AABB creatureAABB = ComputeAABB(creatures[i]->GetPosition(), glm::vec3(0.55f, 0.55f, 0.55f));
@@ -1606,20 +1603,53 @@ int main(int argc, char* argv[])
                             float magnitude = glm::length(direction);
                             if (magnitude > 1e-5f) {
                                 direction = glm::normalize(direction);
-                                camera_position_c += direction * speed * delta_t * 0.05f;
                             }
                             camera_position_c += direction * speed * delta_t * 0.05f;
                         }
-                    } else if(pair.first == -2) { // Colisão camera com as faces do cubo
-                        if (pair.second == 0) {
-                            camera_position_c -= frontFaceDirection * speed * delta_t * 0.05f;
-                        } else if (pair.second == 1) {
-                            camera_position_c -= backFaceDirection * speed * delta_t * 0.05f;
-                        } else if (pair.second == 2) {
-                            camera_position_c -= leftFaceDirection * speed * delta_t * 0.05f;
-                        } else if (pair.second == 3) {
-                            camera_position_c -= rightFaceDirection * speed * delta_t * 0.05f;
+                    } else if(pair.first == -2) { 
+                        glm::vec3 faceCenter, faceNormal;
+                        if (pair.second == 0) { 
+                            faceNormal = glm::vec3(0.0f, 0.0f, 1.0f);
+                            faceCenter = glm::vec3(0.0f, 0.0f, cubeSize.z);
+                        } else if (pair.second == 1) { // Tras
+                            faceNormal = glm::vec3(0.0f, 0.0f, -1.0f);
+                            faceCenter = glm::vec3(0.0f, 0.0f, -cubeSize.z);
+                        } else if (pair.second == 2) { // Esquerda
+                            faceNormal = glm::vec3(-1.0f, 0.0f, 0.0f);
+                            faceCenter = glm::vec3(-cubeSize.x, 0.0f, 0.0f);
+                        } else if (pair.second == 3) { // Direita
+                            faceNormal = glm::vec3(1.0f, 0.0f, 0.0f);
+                            faceCenter = glm::vec3(cubeSize.x, 0.0f, 0.0f);
+                        }        
+                        faceNormal *= -1.0f; // Invert the normal to point inside the boundary
+                        float planeOffset = glm::dot(faceNormal, faceCenter);
+                        if (SpherePlaneCollision(camera_position_c, 0.6f, faceNormal, planeOffset))             
+                        {
+                            glm::vec3 cameraPosition3D = glm::vec3(camera_position_c);
+                            float distToPlane = glm::dot(faceNormal, cameraPosition3D) - planeOffset;
+
+                            if (distToPlane < 0.6f) {
+                                // Compute the amount to move the camera back to the boundary
+                                float correctionDistance = 0.6f - distToPlane;
+
+                                // Apply the correction directly along the face normal
+                                glm::vec3 correction = faceNormal * correctionDistance;
+
+                                // Snap the player to the boundary smoothly
+                                camera_position_c += glm::vec4(correction, 0.0f);
+
+                                // Optionally, zero out the movement in the direction of the faceNormal
+                                // to prevent further movement into the wall
+                                glm::vec3 velocityDirection = glm::vec3(-w_vector_flat * speed);
+                                float velocityIntoPlane = glm::dot(velocityDirection, faceNormal);
+                                if (velocityIntoPlane > 0) {
+                                    glm::vec3 newVelocity = velocityDirection - (faceNormal * velocityIntoPlane);
+                                    camera_position_c -= glm::vec4(newVelocity * delta_t, 0.0f);
+                                }
+                            }
+                            
                         }
+                    potentialCollisions.erase(std::remove(potentialCollisions.begin(), potentialCollisions.end(), pair), potentialCollisions.end());
                     }
                 }
 

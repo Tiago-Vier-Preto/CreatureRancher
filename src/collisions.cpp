@@ -15,3 +15,10 @@ bool CheckSphereSphereOverlap(glm::vec3 posA, float radiusA, glm::vec3 posB, flo
     float distance = glm::length(posA - posB);
     return distance < (radiusA + radiusB);
 }
+
+bool SpherePlaneCollision(const glm::vec3 spherePosition, const float radius, const glm::vec3 normalPlane, const float planeDistance) {
+    glm::vec3 spherePosition3D = glm::vec3(spherePosition);
+    float distToPlane = glm::dot(normalPlane, spherePosition) - planeDistance;
+    return std::abs(distToPlane) <= radius;
+}
+

@@ -12,5 +12,6 @@ struct AABB {
 AABB ComputeAABB(glm::vec3 position, glm::vec3 size);
 bool CheckAABBOverlap(const AABB& a, const AABB& b);
 bool CheckSphereSphereOverlap(glm::vec3 posA, float radiusA, glm::vec3 posB, float radiusB);
+bool SpherePlaneCollision(const glm::vec3 spherePosition, const float radius, const glm::vec3 normalPlane, const float planeDistance) ;
 
 #endif
