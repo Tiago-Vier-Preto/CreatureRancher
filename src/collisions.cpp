@@ -22,3 +22,23 @@ bool SpherePlaneCollision(const glm::vec3 spherePosition, const float radius, co
     return std::abs(distToPlane) <= radius;
 }
 
+bool CylinderSphereCollision(glm::vec3 cylinderPosition, float cylinderRadius, float cylinderHeight, glm::vec3 spherePosition, float sphereRadius) {
+    // Calculate the closest point on the cylinder's axis to the sphere's center
+    float halfHeight = cylinderHeight * 0.5f;
+    glm::vec3 cylinderTop = cylinderPosition + glm::vec3(0, halfHeight, 0);
+    glm::vec3 cylinderBottom = cylinderPosition - glm::vec3(0, halfHeight, 0);
+
+    // Project the sphere's center onto the cylinder's axis
+    glm::vec3 axis = glm::normalize(cylinderTop - cylinderBottom);
+    float projection = glm::dot(spherePosition - cylinderBottom, axis);
+    projection = glm::clamp(projection, 0.0f, cylinderHeight);
+
+    // Find the closest point on the cylinder's axis to the sphere
+    glm::vec3 closestPoint = cylinderBottom + axis * projection;
+
+    // Check if the distance from the closest point to the sphere's center is less than the sum of the radii
+    float distance = glm::length(closestPoint - spherePosition);
+    return distance < (cylinderRadius + sphereRadius);
+}
+
+

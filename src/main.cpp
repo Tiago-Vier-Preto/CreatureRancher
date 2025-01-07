@@ -822,7 +822,7 @@ int main(int argc, char* argv[])
         ma_decoder_uninit(&decoder_menu);
         return -1;
     }
-
+    bool seeing_store = false;
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
@@ -1584,7 +1584,10 @@ int main(int argc, char* argv[])
                 if (CheckAABBOverlap(cameraAABB, rightFace)) potentialCollisions.push_back({-2, 3});
 
                 // Colisao com o Store Monster
-                AABB storeMonsterAABB = ComputeAABB(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.55f, 0.55f, 0.55f));
+                AABB storeMonsterAABB = ComputeAABB(glm::vec3(2.0f,4.25f,-30.0f), glm::vec3(15.0f, 15.0f, 15.0f));
+                if (CheckAABBOverlap(cameraAABB, storeMonsterAABB)) {
+                    potentialCollisions.push_back({-3, 1});
+                }
                 
                 for (size_t i = 0; i < creatures.size(); ++i) {
                     AABB creatureAABB = ComputeAABB(creatures[i]->GetPosition(), glm::vec3(0.55f, 0.55f, 0.55f));
@@ -1650,6 +1653,29 @@ int main(int argc, char* argv[])
                             
                         }
                     potentialCollisions.erase(std::remove(potentialCollisions.begin(), potentialCollisions.end(), pair), potentialCollisions.end());
+                    } else if (pair.first == -3) {
+                        if (CylinderSphereCollision(glm::vec3(2.0f, 4.25f, -30.0f), 4.0f, 15.0f, glm::vec3(camera_position_c), 0.3f)) {
+                            if (!seeing_store) {
+                                glm::vec3 direction = glm::vec3(2.0f, 4.25f, -30.0f) - glm::vec3(camera_position_c);
+                                float magnitude = glm::length(direction);
+                                if (magnitude > 1e-5f) {
+                                    direction = glm::normalize(direction);
+                                }
+                                
+                                ma_sound_start(&welcome_sound);
+
+                                for (const auto& slime : inventory)
+                                {
+                                    balance[slime]++;
+                                }
+                                inventory.clear();
+                                current_game_state = UPGRADE;
+                                seeing_store = true;
+                            }
+                            
+                        } else if (seeing_store) {
+                            seeing_store = false;
+                        }
                     }
                 }
 
@@ -1899,7 +1925,7 @@ int main(int argc, char* argv[])
                         printf("Failed to start playback device.\n");
                     }
                 }
-                else if(g_FivekeyPressed)
+                else if(g_FivekeyPressed && mode == CHEAT_MODE)
                 {
                     ma_sound_start(&welcome_sound);
 
