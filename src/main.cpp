@@ -861,6 +861,7 @@ int main(int argc, char* argv[])
                 }
                 else if(g_TwokeyPressed)
                 {
+                    ma_sound_seek_to_pcm_frame(&select_sound, 0.0);
                     ma_sound_start(&select_sound);
                     mode = CHEAT_MODE;
                     for (auto& pair : balance) 
