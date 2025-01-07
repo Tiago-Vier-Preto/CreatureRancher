@@ -241,6 +241,8 @@ bool g_AkeyPressed = false;
 bool g_WkeyPressed = false;
 bool g_SkeyPressed = false;
 
+bool g_EkeyPressed = false;
+
 bool g_ZerokeyPressed = false;
 bool g_OnekeyPressed = false;
 bool g_TwokeyPressed = false;
@@ -809,6 +811,15 @@ int main(int argc, char* argv[])
 
     static float slime_spawn_timer = 0.0f;
 
+    glm::vec4 l = glm::normalize(glm::vec4(0.0f, 1.0f, 0.0f, 0.0f));
+    glm::mat4 shadowMatrix = glm::mat4(
+    1.0f - l.x * l.x,   -l.x * l.y,   -l.x * l.z,    0.0f,
+    -l.y * l.x,    0.0f,   -l.y * l.z,    0.0f,
+    -l.z * l.x,   -l.z * l.y,    1.0f - l.z * l.z,    0.0f,
+    0.0f,          0.0f,          0.0f,          1.0f
+    );
+    bool seeing_store = false;
+    bool show_shadows = true;
     // Start playback
     result = ma_device_start(&device);
     if (result != MA_SUCCESS) {
@@ -819,10 +830,14 @@ int main(int argc, char* argv[])
         ma_decoder_uninit(&decoder_menu);
         return -1;
     }
-    bool seeing_store = false;
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
+        if(g_EkeyPressed)
+        {
+            show_shadows = !show_shadows;
+            g_EkeyPressed = false;
+        }
         // Aqui executamos as operações de renderização
         switch(current_game_state)
         {
@@ -1523,6 +1538,7 @@ int main(int argc, char* argv[])
                 #define WEAPON   12
                 #define PRIMEIRO_PLANO 20
                 #define STORE_MONSTER 34
+                #define SHADOW_ID 100
                 // Desenhamos o plano do chão
                 for(int i = 0; i < 9; i++)
                 {
@@ -1677,7 +1693,6 @@ int main(int argc, char* argv[])
                     }
                 }
 
-
                 int inventory_size = inventory.size();
                 for (auto it = creatures.begin(); it != creatures.end(); ++it) 
                 {
@@ -1761,6 +1776,17 @@ int main(int argc, char* argv[])
                         DrawVirtualObject("anemo1");
                         DrawVirtualObject("anemo2");
                         DrawVirtualObject("anemo3");
+                        //Anemo Shadow
+                        if(show_shadows)
+                        {
+                            glm::mat4 shadowModel = Matrix_Translate(position.x, -1.0f, position.z) * shadowMatrix * Matrix_Rotate_Y(rotation_angle) ;
+                            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(shadowModel));
+                            glUniform1i(g_object_id_uniform, SHADOW_ID);
+                            DrawVirtualObject("anemo1");
+                            DrawVirtualObject("anemo2");
+                            DrawVirtualObject("anemo3");
+                        }
+
                     } else if (creature->GetType() == 1) { // Cryo
                         model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
                                     * Matrix_Rotate_Y(rotation_angle) 
@@ -1771,6 +1797,15 @@ int main(int argc, char* argv[])
                         glUniform2f(tilingLocation, 1.0f, 1.0f);
                         DrawVirtualObject("cryo1");
                         DrawVirtualObject("cryo2");
+                        //Cryo Shadow
+                        if(show_shadows)
+                        {
+                            glm::mat4 shadowModel = Matrix_Translate(position.x, -1.0f, position.z) * shadowMatrix * Matrix_Rotate_Y(rotation_angle)  * Matrix_Rotate_X(3*3.141592f/2.0f) ;
+                            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(shadowModel));
+                            glUniform1i(g_object_id_uniform, SHADOW_ID);
+                            DrawVirtualObject("cryo1");
+                            DrawVirtualObject("cryo2");
+                        }
                     } else if (creature->GetType() == 2) { // Dendro
                         model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
                                     * Matrix_Rotate_Y(rotation_angle) 
@@ -1795,6 +1830,29 @@ int main(int argc, char* argv[])
                         DrawVirtualObject("dendro14");
                         DrawVirtualObject("dendro15");
                         DrawVirtualObject("dendro16");
+                        //Dendro Shadow
+                        if(show_shadows)
+                        {
+                            glm::mat4 shadowModel = Matrix_Translate(position.x, -1.0f, position.z) * shadowMatrix * Matrix_Rotate_Y(rotation_angle) * Matrix_Rotate_X(3*3.141592f/2.0f);
+                            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(shadowModel));
+                            glUniform1i(g_object_id_uniform, SHADOW_ID);
+                            DrawVirtualObject("dendro1");
+                            DrawVirtualObject("dendro2");
+                            DrawVirtualObject("dendro3");
+                            DrawVirtualObject("dendro4");
+                            DrawVirtualObject("dendro5");
+                            DrawVirtualObject("dendro6");
+                            DrawVirtualObject("dendro7");
+                            DrawVirtualObject("dendro8");
+                            DrawVirtualObject("dendro9");
+                            DrawVirtualObject("dendro10");
+                            DrawVirtualObject("dendro11");
+                            DrawVirtualObject("dendro12");
+                            DrawVirtualObject("dendro13");
+                            DrawVirtualObject("dendro14");
+                            DrawVirtualObject("dendro15");
+                            DrawVirtualObject("dendro16");
+                        }
                     } else if (creature->GetType() == 3) { // Plasma
                         model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
                                     * Matrix_Rotate_Y(rotation_angle) 
@@ -1805,6 +1863,16 @@ int main(int argc, char* argv[])
                         DrawVirtualObject("plasma1");
                         DrawVirtualObject("plasma2");
                         DrawVirtualObject("plasma3");
+                        //Plasma Shadow
+                        if(show_shadows)
+                        {
+                            glm::mat4 shadowModel = Matrix_Translate(position.x, -1.0f, position.z) * shadowMatrix * Matrix_Rotate_Y(rotation_angle) * Matrix_Scale(0.01f, 0.01f, 0.01f);;
+                            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(shadowModel));
+                            glUniform1i(g_object_id_uniform, SHADOW_ID);
+                            DrawVirtualObject("plasma1");
+                            DrawVirtualObject("plasma2");
+                            DrawVirtualObject("plasma3");
+                        }
                     } else if (creature->GetType() == 4) { // Fire
                         model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
                                     * Matrix_Rotate_Y(rotation_angle) 
@@ -1814,6 +1882,15 @@ int main(int argc, char* argv[])
                         glUniform2f(tilingLocation, 1.0f, 1.0f); 
                         DrawVirtualObject("fire1");
                         DrawVirtualObject("fire2");
+                        //Fire Shadow
+                        if(show_shadows)
+                        {
+                            glm::mat4 shadowModel = Matrix_Translate(position.x, -1.0f, position.z) * shadowMatrix * Matrix_Rotate_Y(rotation_angle) * Matrix_Scale(0.01f, 0.01f, 0.01f);
+                            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(shadowModel));
+                            glUniform1i(g_object_id_uniform, SHADOW_ID);
+                            DrawVirtualObject("fire1");
+                            DrawVirtualObject("fire2");
+                        }
                     } else if (creature->GetType() == 5) { // Geo
                         model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
                                     * Matrix_Rotate_Y(rotation_angle) 
@@ -1822,6 +1899,14 @@ int main(int argc, char* argv[])
                         glUniform1i(g_object_id_uniform, creature->GetType() + CREATURE);
                         glUniform2f(tilingLocation, 1.0f, 1.0f);
                         DrawVirtualObject("geo1");
+                        //Geo Shadow
+                        if(show_shadows)
+                        {
+                            glm::mat4 shadowModel = Matrix_Translate(position.x, -1.0f, position.z) * shadowMatrix * Matrix_Rotate_Y(rotation_angle) * Matrix_Scale(0.01f, 0.01f, 0.01f);
+                            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(shadowModel));
+                            glUniform1i(g_object_id_uniform, SHADOW_ID);
+                            DrawVirtualObject("geo1");
+                        }
                     } else if (creature->GetType() == 6) { //Electro
                         model = Matrix_Translate(position.x, position.y - 1.5f, position.z)
                                     * Matrix_Rotate_Y(rotation_angle)
@@ -1832,6 +1917,16 @@ int main(int argc, char* argv[])
                         DrawVirtualObject("electro1");
                         DrawVirtualObject("electro2");
                         DrawVirtualObject("electro3");
+                        //Electro Shadow
+                        if(show_shadows)
+                        {
+                            glm::mat4 shadowModel = Matrix_Translate(position.x, -1.0f, position.z) * shadowMatrix * Matrix_Rotate_Y(rotation_angle) * Matrix_Scale(0.01f, 0.01f, 0.01f);
+                            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(shadowModel));
+                            glUniform1i(g_object_id_uniform, SHADOW_ID);
+                            DrawVirtualObject("electro1");
+                            DrawVirtualObject("electro2");
+                            DrawVirtualObject("electro3");
+                        }
                     } else if (creature->GetType() == 7) { // Water
                         model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
                                     * Matrix_Rotate_Y(rotation_angle) 
@@ -1841,6 +1936,15 @@ int main(int argc, char* argv[])
                         glUniform2f(tilingLocation, 1.0f, 1.0f);
                         DrawVirtualObject("water1");
                         DrawVirtualObject("water2");
+                        //Water Shadow
+                        if(show_shadows)
+                        {
+                            glm::mat4 shadowModel = Matrix_Translate(position.x, -1.0f, position.z) * shadowMatrix * Matrix_Rotate_Y(rotation_angle)  * Matrix_Scale(0.01f, 0.01f, 0.01f);
+                            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(shadowModel));
+                            glUniform1i(g_object_id_uniform, SHADOW_ID);
+                            DrawVirtualObject("water1");
+                            DrawVirtualObject("water2");
+                        }
                     }
                 }
                 //Store Monster
@@ -2735,6 +2839,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     if (key == GLFW_KEY_S && action == GLFW_PRESS) g_SkeyPressed = true;
     else if (key == GLFW_KEY_S && action == GLFW_RELEASE) g_SkeyPressed = false;
 
+    if (key == GLFW_KEY_E && action == GLFW_PRESS) g_EkeyPressed = true;
+    else if (key == GLFW_KEY_E && action == GLFW_RELEASE) g_EkeyPressed = false;
     // O código abaixo implementa a seguinte lógica:
     //   Se apertar tecla X       então g_AngleX += delta;
     //   Se apertar tecla shift+X então g_AngleX -= delta;

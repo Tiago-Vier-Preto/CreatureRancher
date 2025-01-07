@@ -41,7 +41,7 @@ uniform mat4 projection;
 #define CONTROLS 32
 #define UPGRADES 33
 #define STORE_MONSTER 34
-
+#define SHADOW 100
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -121,7 +121,7 @@ void main()
     vec4 n = normalize(normal);
 
     // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
-    vec4 l = normalize(vec4(1.0,1.0,0.0,0.0));
+    vec4 l = normalize(vec4(0.0,1.0,0.0,0.0));
 
     // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v = normalize(camera_position - p);
@@ -613,6 +613,11 @@ void main()
         color.a = 1;
 
         color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+    }
+    else if (object_id == 100) 
+    {
+        color = vec4(0.0, 0.0, 0.0, 0.5);
+        
     }
     else if (object_id == -1) 
     {
