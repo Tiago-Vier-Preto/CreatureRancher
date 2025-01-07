@@ -27,6 +27,7 @@ public:
     float jump_chance;
     float gravity;
     float capture_time;
+    glm::vec4 lastPosition;
     glm::vec4 direction; // Direção do movimento
 
     void setPosition(glm::vec4 position);

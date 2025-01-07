@@ -259,7 +259,7 @@ const float JUMP_VELOCITY = 5.0f; // Initial velocity for the jump
 
 bool g_IsSprinting = false;
 const float NORMAL_SPEED = 5.0f;
-const float SPRINT_BONUS = 10.0f;
+const float SPRINT_BONUS = 5.0f;
 
 enum GameState{GAME, MAIN_MENU, WIN, UPGRADE};
 
@@ -729,7 +729,6 @@ int main(int argc, char* argv[])
 
     std::vector<Creature*> creatures = InitialCreatureSpawn(STARTING_SLIMES, map_width, map_length);
     int slime_count = STARTING_SLIMES;
-    glm::vec4 lastPosition;
 
     //Player inventory and balance
     std::map<Slime_Type, int> balance = {
@@ -1679,15 +1678,26 @@ int main(int argc, char* argv[])
 
 
                 int inventory_size = inventory.size();
-                for (auto it = creatures.begin(); it != creatures.end(); ++it) {
+                for (auto it = creatures.begin(); it != creatures.end(); ++it) 
+                {
                     auto& creature = *it;
                     glm::vec4 position = creature->GetPosition();
                     float rotation_angle = creature->GetRotationAngle();
 
-                    if (g_RightMouseButtonPressed) {
+                    if (g_RightMouseButtonPressed) 
+                    {   
+                        float range_bonus = 0.0f, angle_bonus = 0.0f;
                         ma_sound_start(&suction_sound);
-                        if (inWeaponRange(weapon_position, weapon_direction, position, 7.0f, 35.0f)) {
-                            if (!creature->captured) {  // Inicia a captura se ainda não estiver capturada
+                        if(creature->captured)
+                        {
+                            range_bonus = 50.0f;
+                            angle_bonus = 10.0f;
+                        }
+
+                        if (inWeaponRange(weapon_position, weapon_direction, position, 7.0f + range_bonus, 35.0f + angle_bonus)) 
+                        {
+                            if (!creature->captured) 
+                            {  // Inicia a captura se ainda não estiver capturada
                                 creature->captured = true;
                                 creature->capture_time = 0.0f;  // Resetando o tempo de captura
                             }
@@ -1700,7 +1710,8 @@ int main(int argc, char* argv[])
                             glm::vec3 newPosition = bezierSpiralPosition(start, end, creature->capture_time, 10, GROUND_LEVEL);
                             position = glm::vec4(newPosition, 1.0f);
 
-                            if (creature->capture_time >= 1.0f) {
+                            if (creature->capture_time >= 1.0f) 
+                            {
                                 creature->capture_time = 0.0f;  // Resetando o tempo de captura
                                 position = glm::vec4(end, 1.0f); // Finaliza no centro da arma
                                 if (inventory_size < DEFAULT_INVENTORY_SIZE + inventory_level)
@@ -1717,22 +1728,28 @@ int main(int argc, char* argv[])
                                 continue;
                             }
 
-                            lastPosition = position;  // Atualiza a posição final durante o movimento
-                        } else {
-                            if (creature->captured) {
+                            creature->lastPosition = position;  // Atualiza a posição final durante o movimento
+                        } 
+                        else 
+                        {
+                            if (creature->captured) 
+                            {
                                 creature->captured = false; // Finaliza a captura
-                                creature->setPosition(lastPosition);  // Define a posição final quando o botão é solto
+                                creature->setPosition(creature->lastPosition);  // Define a posição final quando o botão é solto
                             } 
                         }
-                    } else {
+                    } 
+                    else 
+                    {
                         // Se o botão do mouse foi solto e a criatura estava capturada
-                        if (creature->captured) {
+                        if (creature->captured) 
+                        {
                             creature->captured = false; // Finaliza a captura
-                            creature->setPosition(lastPosition);  // Define a posição final quando o botão é solto
-                            position = lastPosition;
+                            creature->setPosition(creature->lastPosition);  // Define a posição final quando o botão é solto
+                            position = creature->lastPosition;
                         }
-                    }      
-        
+                    }
+
                     if (creature->GetType() == 0) { // Anemo
                         model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
                                     * Matrix_Rotate_Y(rotation_angle) 
