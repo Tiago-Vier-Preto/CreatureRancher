@@ -9,7 +9,7 @@ const float Creature::GROUND_LEVEL = 0.0f;
 const float Creature::MIN_DISTANCE = 5.0f; // Distância mínima entre as criaturas
 
 Creature::Creature(float x, float y, float z, float jump_velocity = 5.0f, float jump_chance = 0.5f, float gravity = -9.81f) : 
-position(x, y, z, 1.0f), vertical_velocity(0.0f), is_jumping(false), rotation_angle(0.0f), target_rotation_angle(0.0f), 
+position(x, y, z, 1.0f), vertical_velocity(0.0f), is_jumping(false), rotation_angle(0.0f), target_rotation_angle(0.0f), capture_time(0.0f),
 jump_velocity(jump_velocity), jump_chance(jump_chance), gravity(gravity){
 }
 

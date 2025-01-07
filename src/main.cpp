@@ -729,9 +729,7 @@ int main(int argc, char* argv[])
 
     std::vector<Creature*> creatures = InitialCreatureSpawn(STARTING_SLIMES, map_width, map_length);
     int slime_count = STARTING_SLIMES;
-    float captureTime = 0.0f;
     glm::vec4 lastPosition;
-    float lastCaptureTime = 0.0f;
 
     //Player inventory and balance
     std::map<Slime_Type, int> balance = {
@@ -1688,37 +1686,35 @@ int main(int argc, char* argv[])
 
                     if (g_RightMouseButtonPressed) {
                         ma_sound_start(&suction_sound);
-                        if (inWeaponRange(weapon_position, weapon_direction, position, 7.0f, 30.0f)) {
+                        if (inWeaponRange(weapon_position, weapon_direction, position, 7.0f, 35.0f)) {
                             if (!creature->captured) {  // Inicia a captura se ainda não estiver capturada
                                 creature->captured = true;
-                                captureTime = 0.0f;  // Resetando o tempo de captura
+                                creature->capture_time = 0.0f;  // Resetando o tempo de captura
                             }
 
-                            captureTime += delta_t / 2.0f; // Ajuste a taxa de incremento de tempo
-                            captureTime = glm::clamp(captureTime, 0.0f, 1.0f); // Normaliza entre 0 e 1
+                            creature->capture_time += delta_t / 2.0f; // Ajuste a taxa de incremento de tempo
+                            creature->capture_time = glm::clamp(creature->capture_time, 0.0f, 1.0f); // Normaliza entre 0 e 1
 
                             glm::vec3 start = glm::vec3(position);
                             glm::vec3 end = glm::vec3(weapon_position);
-                            glm::vec3 newPosition = bezierSpiralPosition(start, end, captureTime, 10, GROUND_LEVEL);
+                            glm::vec3 newPosition = bezierSpiralPosition(start, end, creature->capture_time, 10, GROUND_LEVEL);
                             position = glm::vec4(newPosition, 1.0f);
 
-                            if (captureTime >= 1.0f) {
-                                captureTime = 0.0f;  // Resetando o tempo de captura
+                            if (creature->capture_time >= 1.0f) {
+                                creature->capture_time = 0.0f;  // Resetando o tempo de captura
                                 position = glm::vec4(end, 1.0f); // Finaliza no centro da arma
                                 if (inventory_size < DEFAULT_INVENTORY_SIZE + inventory_level)
                                 {
                                     ma_sound_start(&pickup_sound);
                                     Slime_Type type = Slime_Type(creature->GetType());
                                     inventory.push_back(type);
-                                    it = creatures.erase(it); 
-                                    continue;
                                 }
                                 else
                                 {
                                     ma_sound_start(&kill_sound);
-                                    it = creatures.erase(it);
-                                    continue;
                                 }
+                                it = creatures.erase(it);
+                                continue;
                             }
 
                             lastPosition = position;  // Atualiza a posição final durante o movimento
