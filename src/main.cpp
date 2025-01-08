@@ -37,13 +37,13 @@
 #include "curve.hpp"
 #include "collisions.hpp"
 
-
+//Biblioteca para o uso de musica e efeitos sonoros
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio.h"
 
+//Constantes
 #define window_width 1280
 #define window_height 720
-
 #define map_width 300.0f
 #define map_length 300.0f
 #define map_height 300.0f
@@ -153,7 +153,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 void CursorPosCallback(GLFWwindow* window, double xpos, double ypos);
 void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
-
 void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount);
 // Definimos uma estrutura que armazenará dados necessários para renderizar
 // cada objeto da cena virtual.
@@ -235,7 +234,6 @@ GLuint g_NumLoadedTextures = 0;
 // Variáveis que guardam o estado das teclas do teclado. 
 bool g_EsckeyPressed = false;
 
-
 bool g_DkeyPressed = false;
 bool g_AkeyPressed = false;
 bool g_WkeyPressed = false;
@@ -250,19 +248,21 @@ bool g_ThreekeyPressed = false;
 bool g_FourkeyPressed = false;
 bool g_FivekeyPressed = false;
 
+//Outras Constantes
 const float GRAVITY = -9.81f; 
 const float GROUND_LEVEL = 0.0f; 
-
-float g_CameraVerticalVelocity = 0.0f;
-
-bool g_IsJumping = false;
-bool g_Player_Started_Jumping = false;
 const float JUMP_VELOCITY = 5.0f; // Initial velocity for the jump
-
-bool g_IsSprinting = false;
 const float NORMAL_SPEED = 5.0f;
 const float SPRINT_BONUS = 5.0f;
 
+
+float g_CameraVerticalVelocity = 0.0f;
+
+bool g_IsSprinting = false;
+bool g_IsJumping = false;
+bool g_Player_Started_Jumping = false;
+
+//Referente a cada tela do jogo
 enum GameState{GAME, MAIN_MENU, WIN, UPGRADE};
 
 int main(int argc, char* argv[])
@@ -291,7 +291,7 @@ int main(int argc, char* argv[])
     // funções modernas de OpenGL.
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-
+    //Inicializações
     GameState current_game_state = MAIN_MENU;
     GameState last_game_state = GAME;
     bool listened_to_lore[4] = {false};
@@ -311,7 +311,7 @@ int main(int argc, char* argv[])
         std::exit(EXIT_FAILURE);
     }
     
-    //Game Icon
+    //Game Icon da janela
     int width, height;
     int channels;
     unsigned char* pixels = stbi_load("../../data/icon/icon.png", &width, &height, &channels, 4);
@@ -321,6 +321,7 @@ int main(int argc, char* argv[])
     icon[0].pixels = pixels;
     glfwSetWindowIcon(window, 1, icon);
 
+    //Carregamento das músicas do jogo
     ma_result result;
     ma_device_config deviceConfig;
     ma_device device;
@@ -353,9 +354,10 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    currentDecoder = &decoder_menu; // Start with game music
+    //Musica inicial é a do Menu
+    currentDecoder = &decoder_menu;
 
-    // Configure playback device
+    //Configurando playback device
     deviceConfig = ma_device_config_init(ma_device_type_playback);
     deviceConfig.playback.format   = currentDecoder->outputFormat;
     deviceConfig.playback.channels = currentDecoder->outputChannels;
@@ -363,7 +365,7 @@ int main(int argc, char* argv[])
     deviceConfig.dataCallback      = data_callback;
     deviceConfig.pUserData         = currentDecoder;
 
-    // Initialize the playback device
+    // Inicializando o playback device
     result = ma_device_init(NULL, &deviceConfig, &device);
     if (result != MA_SUCCESS) {
         printf("Failed to initialize playback device.\n");
@@ -373,7 +375,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    //SFX
+    //Carregando SFX
     ma_engine engine;
     ma_result result_sfx = ma_engine_init(NULL, &engine);
     if (result_sfx != MA_SUCCESS)
@@ -603,6 +605,7 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../data/electro-slime/textures/final_bake.png"); // TextureImage9
     LoadTextureImage("../../data/water-slime/textures/final_bake.001.png"); // TextureImage10
 
+    //Faces da Skybox
     std::vector<std::string> faces
     {
         "../../data/skybox/right.jpg",
@@ -637,6 +640,7 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../data/planes/factory.jpg"); // TextureImage27
     LoadTextureImage("../../data/planes/watery_mud.jpg"); // TextureImage28
 
+    //Faces da segunda skybox
     std::vector<std::string> faces_heaven
     {
         "../../data/heaven_skybox/right.jpg",
@@ -742,7 +746,7 @@ int main(int argc, char* argv[])
     std::vector<Creature*> creatures = InitialCreatureSpawn(STARTING_SLIMES, map_width, map_length);
     int slime_count = STARTING_SLIMES;
 
-    //Player inventory and balance
+    //Conta do jogador
     std::map<Slime_Type, int> balance = {
         {ANEMO, 0},
         {CRYO, 0},
@@ -753,10 +757,11 @@ int main(int argc, char* argv[])
         {ELECTRO, 0},
         {WATER, 0}
     };
+    //Inventario do jogador
     std::vector<Slime_Type> inventory = {};
 
     float stamina_counter = DEFAULT_STAMINA;
-
+    //Preços dos upgrades
     int movement_speed_level = 0;
     std::map<Slime_Type, std::vector<int>> movement_speed_costs = {
     {ANEMO, {0, 2, 5}},
@@ -821,6 +826,7 @@ int main(int argc, char* argv[])
 
     static float slime_spawn_timer = 0.0f;
 
+    //Matriz shadow que considera vetor de luz
     glm::vec4 l = glm::normalize(glm::vec4(0.0f, 1.0f, 0.0f, 0.0f));
     glm::mat4 shadowMatrix = glm::mat4(
     1.0f - l.x * l.x,   -l.x * l.y,   -l.x * l.z,    0.0f,
@@ -830,7 +836,8 @@ int main(int argc, char* argv[])
     );
     bool seeing_store = false;
     bool show_shadows = true;
-    // Start playback
+
+    //Começa musica playback
     result = ma_device_start(&device);
     if (result != MA_SUCCESS) {
         printf("Failed to start playback device.\n");
@@ -840,24 +847,26 @@ int main(int argc, char* argv[])
         ma_decoder_uninit(&decoder_menu);
         return -1;
     }
+
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
-    {
+    {   //Tecla E ativa ou desativa sombras
         if(g_EkeyPressed)
         {
             show_shadows = !show_shadows;
             g_EkeyPressed = false;
         }
-        // Aqui executamos as operações de renderização
+        //Funciona diferente pra cada GameState
         switch(current_game_state)
-        {
+        {   
+            //Menu Principal
             case MAIN_MENU:
-            {
+            {   //Esc fecha jogo
                 if (g_EsckeyPressed)
                 {
                     glfwSetWindowShouldClose(window, GL_TRUE);
                     break;
-                }
+                } //1 inicia jogo
                 else if(g_OnekeyPressed)
                 {
                     current_game_state = last_game_state;
@@ -883,7 +892,7 @@ int main(int argc, char* argv[])
                         printf("Failed to start playback device.\n");
                     }
                     g_OnekeyPressed = false;
-                }
+                } //Dois ativa cheats
                 else if(g_TwokeyPressed)
                 {
                     ma_sound_seek_to_pcm_frame(&select_sound, 0.0);
@@ -898,6 +907,7 @@ int main(int argc, char* argv[])
                 glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                 glUseProgram(g_GpuProgramID);
+                //Faz uma camera look-at que olha fixamente e continuamente para um plano com uma textura que é a imagem que serve como menu
                 glm::vec3 menu_center = glm::vec3(0.0f, 0.0f, 0.0f);
                 float menu_width = 2.0f;
                 float menu_height = 2.0f;
@@ -931,6 +941,7 @@ int main(int argc, char* argv[])
                 model = Matrix_Translate(menu_center.x, menu_center.y, menu_center.z)
                         * Matrix_Scale(1.54f, 0.88f, 1.0f);
                 glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+                //Tecla tres mostra controles
                 if(g_ThreekeyPressed)
                 {
                     glUniform1i(g_object_id_uniform, CONTROLS);
@@ -943,14 +954,15 @@ int main(int argc, char* argv[])
                     glUniform2f(tilingLocation, 1.0f, 1.0f);
                     DrawVirtualObject("menu");
                 }
-
                 TextRendering_ShowFramesPerSecond(window);
                 glfwSwapBuffers(window);
                 glfwPollEvents();
                 break;
             }
+            //Tela de Upgrades
             case UPGRADE:
             {
+                //Tecla esc volta ao jogo
                 if (g_EsckeyPressed)
                 {
                     ma_sound_start(&goodbye_sound);
@@ -958,6 +970,7 @@ int main(int argc, char* argv[])
                     g_EsckeyPressed = false;
                     break;
                 }
+                //Faz uma camera look-at que olha fixamente e continuamente para um plano com uma textura que é a imagem que serve como menu de upgrade
                 glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                 glUseProgram(g_GpuProgramID);
@@ -997,7 +1010,7 @@ int main(int argc, char* argv[])
                 glUniform2f(tilingLocation, 1.0f, 1.0f);
                 DrawVirtualObject("menu");
 
-                //Text
+                //Texto na tela sobre cada upgrade e seu preço
                 float line_spacing = 0.165f;
                 float x = -0.99f;
                 float start_y = 0.9f;
@@ -1082,7 +1095,7 @@ int main(int argc, char* argv[])
                 TextRendering_PrintString(window, "Balance: " + constructed_string, x, start_y - line_spacing * 11, scale);
                 TextRendering_ShowFramesPerSecond(window);
 
-                //Purchase Logic
+                //Logica de compra dos upgrades
                 if (g_OnekeyPressed && movement_speed_level < 3) 
                 {
                     bool canAfford = true;
@@ -1231,8 +1244,9 @@ int main(int argc, char* argv[])
                 glfwPollEvents();
                 break;
             }
+            //Tela de vitoria, quando ultima parte da historia e comprada
             case WIN:
-            {
+            {   //Esc volta pro menu principal
                 if (g_EsckeyPressed)
                 {
                     ma_sound_start(&select_sound);
@@ -1254,6 +1268,7 @@ int main(int argc, char* argv[])
                         printf("Failed to start playback device.\n");
                     }
                 }
+                //Zero volta pro jogo
                 else if(g_ZerokeyPressed)
                 {
                     current_game_state = GAME;
@@ -1276,6 +1291,7 @@ int main(int argc, char* argv[])
                 glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                 glUseProgram(g_GpuProgramID);
+                //Implementa uma camera look-at que pode ser rotacionada em torno da figura da divindade
                 float r = g_CameraDistance + 250;
                 float y = r*sin(g_CameraPhi);
                 float z = r*cos(g_CameraPhi)*cos(g_CameraTheta);
@@ -1303,7 +1319,7 @@ int main(int argc, char* argv[])
                 }
                 glUniformMatrix4fv(g_view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
                 glUniformMatrix4fv(g_projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
-                
+                //Sao desenhados uma skybox unica e a divindade
                 glm::mat4 model = Matrix_Identity();
                 #define HEAVEN_CUBE 29
                 #define GOD 30
@@ -1326,9 +1342,9 @@ int main(int argc, char* argv[])
                 glfwPollEvents();
                 break;
             }
-
+            //Caso de gameplay principal
             case GAME:
-            {
+            {   //Esc volta para o menu
                 if (g_EsckeyPressed)
                 {
                     ma_sound_start(&select_sound);
@@ -1395,6 +1411,7 @@ int main(int argc, char* argv[])
                 float delta_t = current_time - prev_time;
                 slime_spawn_timer += delta_t;
                 prev_time = current_time;
+                //Calculo de stamina para correr
                 float stamina_total = DEFAULT_STAMINA + stamina_level * 3;
                 float speed = NORMAL_SPEED + float(movement_speed_level);
                 if(g_IsSprinting)
@@ -1418,8 +1435,8 @@ int main(int argc, char* argv[])
                     }
                 }
 
+                //Atualizacao das criaturas e exibição do som mais alto baseado na proximidade com o jogador
                 bool started_jumping;
-                // Initialize variables to track the loudest jump
                 float maxVolume = 0.0f;
                 Creature* loudestCreature = nullptr;
 
@@ -1443,21 +1460,21 @@ int main(int argc, char* argv[])
                     }
                 }
 
-                // Play the sound for the loudest jump if any
+                //Roda o som mais alto se tiver
                 if (loudestCreature != nullptr) {
                     ma_sound_set_volume(&slime_jump_sound, maxVolume);
                     ma_sound_start(&slime_jump_sound);
                 }
-                if ((slime_spawn_timer >= std::max((SLIME_SPAWN_TIME - float(slime_spawn_rate_level) * 2), 1.0f)) && slime_count < SLIME_LIMIT) {
-                    // Reset the spawn timer
-                    slime_spawn_timer = 0.0f;
 
-                    // Spawn a new slime and add it to the creatures vector
-                    Creature* new_slime = SpawnCreature(map_width, map_length, creatures); // Adjust SpawnCreature parameters as needed
+                //Geração de slimes
+                if ((slime_spawn_timer >= std::max((SLIME_SPAWN_TIME - float(slime_spawn_rate_level) * 2), 1.0f)) && slime_count < SLIME_LIMIT) {
+                    slime_spawn_timer = 0.0f;
+                    Creature* new_slime = SpawnCreature(map_width, map_length, creatures);
                     slime_count++;
                     creatures.push_back(new_slime);
                 }
-
+                
+                //Calculo da camera
                 g_CameraVerticalVelocity += GRAVITY * delta_t;
                 camera_position_c.y += g_CameraVerticalVelocity * delta_t;
 
@@ -1491,12 +1508,14 @@ int main(int argc, char* argv[])
                     playerMoved = true;
                 }
 
-                // Play Step sound if the player moved
+                //Som de passo enquanto o jogador caminha e não pula
                 if (playerMoved && !g_IsJumping) {
+                    //Volume e pitch variam se esta andando ou correndo
                     ma_sound_set_volume(&step_sound, g_IsSprinting && stamina_counter > 0 ? 1.0f : 0.8f);
-                    ma_sound_set_pitch(&step_sound, g_IsSprinting && stamina_counter > 0 ? 1.5f : 1.0f); // Increase pitch when sprinting
+                    ma_sound_set_pitch(&step_sound, g_IsSprinting && stamina_counter > 0 ? 1.5f : 1.0f);
                     ma_sound_start(&step_sound);
                 }
+                //Som do pulo
                 if (g_Player_Started_Jumping) {
                     ma_sound_start(&jump_sound);
                     g_Player_Started_Jumping = false;
@@ -1549,7 +1568,7 @@ int main(int argc, char* argv[])
                 #define PRIMEIRO_PLANO 20
                 #define STORE_MONSTER 34
                 #define SHADOW_ID 100
-                // Desenhamos o plano do chão
+                // Desenhamos os plano do chão pra cada bioma
                 for(int i = 0; i < 9; i++)
                 {
                     model = Matrix_Translate(-200.0f + 200 * (i % 3),-1.1f,-200.0f + 200 * (i / 3))
@@ -1559,7 +1578,7 @@ int main(int argc, char* argv[])
                     glUniform2f(tilingLocation, 10.0f, 10.0f);
                     DrawVirtualObject("the_plane");
                 }
-
+                //Desenha a arma
                 glm::vec4 weapon_position = camera_position_c + 0.4f * normalize(camera_view_vector) - 0.25f * normalize(crossproduct(camera_up_vector, camera_view_vector)) - 0.1f * camera_up_vector;
                 glm::vec4 weapon_direction = normalize(camera_view_vector);
                 glm::vec4 weapon_right = normalize(crossproduct(camera_up_vector, weapon_direction));
@@ -1622,7 +1641,7 @@ int main(int argc, char* argv[])
 
                 // Fase de colisao Narrow Phase
                 for (const auto& pair : potentialCollisions) {
-                    if (pair.first == -1) { // Colisão entre a camera e uma criatura
+                    if (pair.first == -1) { // Colisão entre a camera e um slime
                         int creatureIndex = pair.second;
                         if (CheckSphereSphereOverlap(camera_position_c, 0.6,
                                             creatures[creatureIndex]->GetPosition(), 0.6)) {
@@ -1633,9 +1652,9 @@ int main(int argc, char* argv[])
                             }
                             camera_position_c += direction * speed * delta_t * 0.05f;
                         }
-                    } else if(pair.first == -2) { 
+                    } else if(pair.first == -2) { //Colisao com as paredes da skybox
                         glm::vec3 faceCenter, faceNormal;
-                        if (pair.second == 0) { 
+                        if (pair.second == 0) { //Frente
                             faceNormal = glm::vec3(0.0f, 0.0f, 1.0f);
                             faceCenter = glm::vec3(0.0f, 0.0f, cubeSize.z);
                         } else if (pair.second == 1) { // Tras
@@ -1648,10 +1667,10 @@ int main(int argc, char* argv[])
                             faceNormal = glm::vec3(1.0f, 0.0f, 0.0f);
                             faceCenter = glm::vec3(cubeSize.x, 0.0f, 0.0f);
                         }        
-                        faceNormal *= -1.0f; // Invert the normal to point inside the boundary
+                        faceNormal *= -1.0f; // Inverte a normal pro ponto ficar dentro da parede
                         float planeOffset = glm::dot(faceNormal, faceCenter);
                         if (SpherePlaneCollision(camera_position_c, 0.6f, faceNormal, planeOffset))             
-                        {
+                        {   //Colisao com ajuste adicional para suavizar a força contraria
                             glm::vec3 cameraPosition3D = glm::vec3(camera_position_c);
                             float distToPlane = glm::dot(faceNormal, cameraPosition3D) - planeOffset;
                             if (distToPlane < 0.6f) {
@@ -1672,7 +1691,7 @@ int main(int argc, char* argv[])
                             
                         }
                     potentialCollisions.erase(std::remove(potentialCollisions.begin(), potentialCollisions.end(), pair), potentialCollisions.end());
-                    } else if (pair.first == -3) {
+                    } else if (pair.first == -3) { //Colisao com o store monster, que abre a loja
                         if (CylinderSphereCollision(glm::vec3(2.0f, 4.25f, -30.0f), 4.0f, 15.0f, glm::vec3(camera_position_c), 0.3f)) {
                             if (!seeing_store) {
                                 glm::vec3 direction = glm::vec3(2.0f, 4.25f, -30.0f) - glm::vec3(camera_position_c);
@@ -1698,6 +1717,7 @@ int main(int argc, char* argv[])
                     }
                 }
 
+                //Logica de sucção dos slimes e coleta
                 int inventory_size = inventory.size();
                 for (auto it = creatures.begin(); it != creatures.end(); ++it) 
                 {
@@ -1732,7 +1752,7 @@ int main(int argc, char* argv[])
                             position = glm::vec4(newPosition, 1.0f);
 
                             if (creature->capture_time >= 1.0f) 
-                            {
+                            {//Indica que foi capturado
                                 creature->capture_time = 0.0f;  // Resetando o tempo de captura
                                 position = glm::vec4(end, 1.0f); // Finaliza no centro da arma
                                 if (inventory_size < DEFAULT_INVENTORY_SIZE + inventory_level)
@@ -1741,7 +1761,7 @@ int main(int argc, char* argv[])
                                     Slime_Type type = Slime_Type(creature->GetType());
                                     inventory.push_back(type);
                                 }
-                                else
+                                else //Mata ele caso o inventario esteja cheio
                                 {
                                     ma_sound_start(&kill_sound);
                                 }
@@ -1771,6 +1791,7 @@ int main(int argc, char* argv[])
                         }
                     }
 
+                    //Desenho de cada slime e sua sombra
                     if (creature->GetType() == 0) { // Anemo
                         model = Matrix_Translate(position.x, position.y - 1.5f, position.z) 
                                     * Matrix_Rotate_Y(rotation_angle) 
@@ -2008,7 +2029,7 @@ int main(int argc, char* argv[])
                 }
                 else if(((!listened_to_lore[3] && lore_progress_level >= 3) || (g_FourkeyPressed && (mode == CHEAT_MODE || listened_to_lore[3])))
                  && (!ma_sound_is_playing(&lore1_sound) && !ma_sound_is_playing(&lore2_sound) && !ma_sound_is_playing(&lore3_sound)))
-                {
+                {   //Jogador ganha o jogo
                     ma_sound_set_volume(&ending_sound, 1.5f);
                     ma_sound_start(&ending_sound);
                     listened_to_lore[3] = true;
@@ -2030,7 +2051,7 @@ int main(int argc, char* argv[])
 
                 }
                 else if(g_ZerokeyPressed && (listened_to_lore[3] || mode == CHEAT_MODE))
-                {
+                {   //Vai para win screen
                     current_game_state = WIN;
                     g_ZerokeyPressed = false;
                     currentDecoder = &decoder_win;
@@ -3095,33 +3116,23 @@ void PrintObjModelInfo(ObjModel* model)
   }
 }
 
-// set makeprg=cd\ ..\ &&\ make\ run\ >/dev/null
-// vim: set spell spelllang=pt_br :
-
+//Função de callback da musica que a faz ficar dando loop infinito e rodando
 void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
     ma_decoder* pDecoder = (ma_decoder*)pDevice->pUserData;
     if (pDecoder == NULL) {
         return;
     }
-
     ma_uint64 framesRead;
     ma_decoder_read_pcm_frames(pDecoder, pOutput, frameCount, &framesRead);
 
-    // Looping logic: If fewer frames are read, loop the audio
     if (framesRead < frameCount) {
         size_t bytesPerFrame = ma_get_bytes_per_frame(pDevice->playback.format, pDevice->playback.channels);
-
-        // Fill the remaining frames by looping
         ma_uint64 remainingFrames = frameCount - framesRead;
-        memset((char*)pOutput + framesRead * bytesPerFrame, 0, remainingFrames * bytesPerFrame); // Zero out remainder
-
-        // Reset decoder and read from the beginning
+        memset((char*)pOutput + framesRead * bytesPerFrame, 0, remainingFrames * bytesPerFrame);
         ma_decoder_seek_to_pcm_frame(pDecoder, 0);
-
-        // Read the remaining frames after resetting
         ma_uint64 extraFramesRead;
         ma_decoder_read_pcm_frames(pDecoder, (char*)pOutput + framesRead * bytesPerFrame, remainingFrames, &extraFramesRead);
     }
 
-    (void)pInput; // Unused
+    (void)pInput;
 }

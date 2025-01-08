@@ -13,6 +13,7 @@ position(x, y, z, 1.0f), vertical_velocity(0.0f), is_jumping(false), rotation_an
 jump_velocity(jump_velocity), jump_chance(jump_chance), gravity(gravity), lastPosition(){
 }
 
+//Atualiza a posição da criatura
 bool Creature::Update(float delta_t) {
     bool started_jumping = false;
     if (!this->captured){
@@ -48,6 +49,7 @@ bool Creature::Update(float delta_t) {
     return started_jumping;
 }
 
+//Pulo da riatura
 void Creature::Jump() {
     if (!is_jumping) {
         is_jumping = true;

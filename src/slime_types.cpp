@@ -60,6 +60,7 @@ int Water_Slime::GetType() const {
     return WATER;
 }
 
+//Cada tipo de slime e inicializado em seu bioma. Usado pro primeiro spawn do jogo
 std::vector<Creature*> InitialCreatureSpawn(int count, float map_width, float map_length) 
 {
     std::vector<Creature*> creatures;
@@ -155,6 +156,7 @@ std::vector<Creature*> InitialCreatureSpawn(int count, float map_width, float ma
     return creatures;
 }
 
+//Cada tipo de slime e inicializado em seu bioma. Usaado para spawns continuos
 Creature* SpawnCreature(float map_width, float map_length, std::vector<Creature*> creatures) 
 {
     Creature* creature;
